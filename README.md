@@ -29,9 +29,3 @@ Here is a working list of what should be included in this repository:
 
 ### Out of Scope
 We do not attempt to capture granular, non-cryptographic implementation and software architecture decisions. This type of development decision should be documented clearly in [Lock Keeper](https://github.com/boltlabs-inc/key-mgmt).
-
-
-
-
-
-
