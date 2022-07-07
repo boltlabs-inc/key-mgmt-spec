@@ -1,1 +1,0 @@
-This file describes the public API that the key-mgmt project will make available to a user application.

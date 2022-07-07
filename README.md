@@ -1,2 +1,1 @@
-# key-mgmt-spec
-Formal specification for the key management project
+Formal specification for the Lock Keeper digital asset management project.
