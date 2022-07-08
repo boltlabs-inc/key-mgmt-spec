@@ -1,4 +1,18 @@
 
+# Authenticate
+This interaction is intiated by the local client application.
+
+1. The calling application requests to create a new open session via the local client API. They specify the user ID and password.
+
+2. The local client initiates OPAQUE with the key server. They form a credential request based on the password and send it with the user ID to the key server.
+
+3. The key server validates the credential request. If it is for a user that doesn't exist, they terminate the connection. Otherwise, they form and send a credential response. OQ: does this happen even if the password is wrong?
+
+4. The local client recieves the credential response. To complete registration, they form and send a credential finalization. From the finalization, they extract a session key.
+
+5. The key server recieves the finalization and checks it (?). OQ: Does the server get any output?
+
+
 # Generate a secret
 
 This interaction is initiated by the local client application, when the user requests to create a new self-custodial secret.
