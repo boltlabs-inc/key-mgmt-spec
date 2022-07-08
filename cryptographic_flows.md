@@ -1,25 +1,27 @@
 
 # Generate a secret
 
-This interaction is initiated by the local client application, when the user requests to create a new self-custodial or delegated secret.
+This interaction is initiated by the local client application, when the user requests to create a new self-custodial secret.
 
-A similar operation happens when the service provider requests to create a new passive secret via the remote client application. This operation is slightly different and is _not_ addressed here.
+1. The calling application initiates generation of a new secret via the local client API. They specify the type of secret (e.g. arbitrary bytes, ECDSA key pair) and provide a communication session with the key server.
 
-1. The calling application initiates generation of a new secret via the local client API. They specify the use permission (self-custodial, delegated), the use restrictions (unilateral control, shared control), and the type of secret (e.g. arbitrary bytes, ECDSA key pair).
-2. The local client authenticates with every key server.
-2. The local client forwards the request to every key server. Optionally, the local client augments each request with some random bytes.
-2. __[Some entity]__ assignes an ID to the secret. (See open questions)
-3. If the secret is specified to have shared control, each key server forwards the request (without the augmented random bytes) to the policy engine. The policy engine approves or rejects creation of a new secret for the user.
-If a key server receives a rejection from the policy engine, they forward it back to the user and the protocol ends.
-4. Within their encalves, the key servers jointly run the secret generation protocol. This _might_ look like: within their enclave, each key server generates some random bytes and combines it with the random bytes provided by the local client to create their share of the secret.
-If the secret has a corresponding joint computation by all key servers to create a public component, the key servers run that computation. Each key server should receive the public component as output.
-5. Each key server stores the output of the secret generation protocols in their database. In particular, they encrypt the secret using enclave-specific key material, then pass it out of the enclave to be stored.
-6. Each key server returns the public portions of the key to the local client application, including the key ID, the public component (if any).
+2. The local client forwards the request to key server. Optionally, the local client augments the request with some random bytes.
+Possible failures: the session authentication fails or times out. The networking layer times out.
+
+2. The key server selects a unique ID (among its existing set of secret IDs) and assigns it to the secret.
+
+4. The key server runs the key generation protocol: the key server generates some random bytes and combines it with the random bytes provided by the local client to create the secret.
+If the secret is an ECDSA key pair, the key server may do additional processing on the secret to make sure it meets the requirements of an ECDSA private key and computes the corresponding public key. 
+
+5. The key server encrypts the secret using user-specific authentication material from the communication session.
+The key server stores the user ID, the key ID, the encrypted secret, and the (optional) public component in their database. 
+
+6. The key server returns the public portions of the key to the local client application, including the key ID and the public component (if any).
+
 7. The local client returns the public portions to the calling application.
 
-## Open questions
-- How is an ID for a secret generated? Which parties participate to select an ID?
-- What if some key server fails to respond to the secret generation request? Is there a redundancy or re-sharing operation that can later make sure that server gets a share of the key?
-- If some server doesn't have a key share, does any entity keep track of which servers have shares of which keys? What is the mechanism to avoid duplicate key IDs if not every server knows about every key?
-
-
+## Aspects not included here
+- Use permissions: there is no support for delegated keys at this point.
+- Policy engine: without a policy engine, we don't have to specify shared vs unilateral control.
+- Remote client application: the remote client can create passive secrets, but it's not incorporated here and will use a slightly different flow
+- Enclaves: The key server runs all operations on normal, untrusted hardware.
