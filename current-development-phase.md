@@ -26,15 +26,18 @@ We provide sketches of the generation, storage, and use of arbitrary secrets bel
     1. Stored locally in secure storage on the user's device.
     1. Copied to the system clipboard.
 1. The asset owner may _import_ a secret to the key server in an appropriate format. 
-    1. [TODO: define or reference standard format.]
+    1. The default expected format is as bytes of the form ``len || secret``, where `len` is 1 byte that represents the length of the secret `secret`.
+    1. The implementation may define other acceptable import formats.
 1. The asset owner may _export_ the secret from the key server. The export format for the key SHOULD allow for easy transfer of the key material to another digital asset management system, i.e., secrets should be portable.
+    1. The default expected format is as bytes of the form ``len || secret``, where `len` is 1 byte that represents the length of the secret `secret`.
+    1. The implementation may define other acceptable import formats.
 1. The asset owner may _audit_ the operations performed by the key server on a given secret. This allows the asset owner to retrieve a log of operations from the key server.
 
 ## Cryptographic Protocol and Implementation Dependencies
-1. We instantiate the asymmetric password-based authenticated key exchange protocol with OPAQUE. We are currently using [opaque-ke](https://docs.rs/opaque-ke/2.0.0-pre.2/opaque_ke/index.html), which implements [version 08 of the IETF RFC](https://datatracker.ietf.org/doc/draft-irtf-cfrg-opaque/08/). This library is under active development, as is the IETF draft. An earlier release of this repository has been audited by NCC Group in June 2021. 
-    1. [TODO: Add any configuration details relevant to a cryptographic audit.]
+1. We instantiate the asymmetric password-based authenticated key exchange protocol with OPAQUE. We are currently using [opaque-ke](https://docs.rs/opaque-ke/2.0.0-pre.2/opaque_ke/index.html), which currently implements [version 09 of the IETF RFC](https://datatracker.ietf.org/doc/draft-irtf-cfrg-opaque/09/). This library is under active development, as is the IETF draft. An earlier release of this repository has been audited by NCC Group in June 2021. 
+    - [TODO](https://github.com/boltlabs-inc/key-mgmt-spec/issues/21): Select and add configuration details relevant to a cryptographic audit.
 1. TLS 1.3. 
-    1. [TODO: add implementation dependency information.]
+    - [TODO](https://github.com/boltlabs-inc/key-mgmt-spec/issues/22): Select and add config, setup, and implementation dependency information.
 
 ## Expected Outcomes
 A working command-line demo with cryptography for handling arbitrary secrets. 
