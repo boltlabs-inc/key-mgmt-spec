@@ -1,27 +1,25 @@
 
+# Authenticate
+The local client inputs a password and receives an "export key", which we will consider as a series of bytes, as output. The key server receives as output some user-specific authentication material, which it can compare to its stored data to verify authentication.
+
+
 # Generate a secret
 
 This interaction is initiated by the local client application, when the user requests to create a new self-custodial secret.
 
 1. The calling application initiates generation of a new secret via the local client API. They specify the type of secret (e.g. arbitrary bytes, ECDSA key pair) and provide a communication session with the key server.
 
-2. The local client forwards the request to key server. Optionally, the local client augments the request with some random bytes.
-Possible failures: the session authentication fails or times out. The networking layer times out.
+2. The local client [_authenticates_](#authenticate) with the key server and receives an export key. It transforms the export key into an [encyption scheme] key.
 
-2. The key server selects a unique ID (among its existing set of secret IDs) and assigns it to the secret.
+3. The local client indicates to the key server that they would like to generate a secret. The server sends random bytes.
 
-4. The key server runs the key generation protocol: the key server generates some random bytes and combines it with the random bytes provided by the local client to create the secret.
-If the secret is an ECDSA key pair, the key server may do additional processing on the secret to make sure it meets the requirements of an ECDSA private key and computes the corresponding public key. 
+4. The local client runs the key generation protocol. The input is a random number generator and the random bytes from the server. The protocol computes a deterministic, pseudorandom function over the inputs, the output of which is the arbitrary secret. 
+If the secret is a type other than "arbitrary bytes," the key server may do additional processing on the output to make sure it meets the requirements of the secret type and, if appropriate, computes the corresponding public component. 
 
-5. The key server encrypts the secret using user-specific authentication material from the communication session.
-The key server stores the user ID, the key ID, the encrypted secret, and the (optional) public component in their database. 
+5. The local client encrypts the secret using user-specific authentication material from the communication session. They send the encrypted secret, the optional public component, and their user ID to the key server.
 
-6. The key server returns the public portions of the key to the local client application, including the key ID and the public component (if any).
+6. The key server selects a unique key ID (among its existing set of IDs for secrets). It verifies that the user ID matches the authenticated user, then stores the user ID, the key ID, the encrypted secret, and the (optional) public component in their database. 
 
-7. The local client returns the public portions to the calling application.
+7. The key server returns the key ID to the local client application.
 
-## Aspects not included here
-- Use permissions: there is no support for delegated keys at this point.
-- Policy engine: without a policy engine, we don't have to specify shared vs unilateral control.
-- Remote client application: the remote client can create passive secrets, but it's not incorporated here and will use a slightly different flow
-- Enclaves: The key server runs all operations on normal, untrusted hardware.
+8. The local client returns the public portions of the new secret, including the key ID and the public component (if any), to the calling application.
