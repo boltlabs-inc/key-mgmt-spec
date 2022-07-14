@@ -22,16 +22,22 @@ We provide sketches of the generation, storage, and use of arbitrary secrets bel
 1. The asset owner can _store_ a secret, either on the key server or locally.
     1. Storage on a key server MUST occur via a mutually authenticated channel that satisfies confidentiality and integrity. 
     1. Local storage on the user's device should be secure.
-1. The asset owner can _retrieve_ a secret from the key server. A retrieved secret can be:
-    1. Stored locally in secure storage on the user's device.
-    1. Copied to the system clipboard.
-1. The asset owner may _import_ a secret to the key server in an appropriate format. 
+1. The asset owner can _retrieve_ a secret from the key server. 
+    1. Retrieval from a key server MUST occur via a mutually authenticated channel that satisfies confidentiality and integrity. 
+    1. The key retrieved MUST be a key associated to the authenticated user.
+    1. A retrieved secret can be:
+        1. Stored locally in secure storage on the user's device.
+        1. Copied to the system clipboard.
+1. The asset owner may _import_ a secret to the system in an appropriate format. 
     1. The default expected format is as bytes of the form ``len || secret``, where `len` is 1 byte that represents the length of the secret `secret`.
     1. The implementation may define other acceptable import formats.
-1. The asset owner may _export_ the secret from the key server. The export format for the key SHOULD allow for easy transfer of the key material to another digital asset management system, i.e., secrets should be portable.
+    1. The user may choose to store the imported secret locally or on the key server.
+1. The asset owner may _export_ the secret from the system. The export format for the key SHOULD allow for easy transfer of the key material to another digital asset management system, i.e., secrets should be portable.
     1. The default expected format is as bytes of the form ``len || secret``, where `len` is 1 byte that represents the length of the secret `secret`.
     1. The implementation may define other acceptable import formats.
 1. The asset owner may _audit_ the operations performed by the key server on a given secret. This allows the asset owner to retrieve a log of operations from the key server.
+    1. Audit log retrieval MUST occur via a mutually authenticated channel that satisfies confidentiality and integrity.
+    1. Audit logs should be portable, i.e., easily exportable from the system.
 
 ## Cryptographic Protocol and Implementation Dependencies
 1. We instantiate the asymmetric password-based authenticated key exchange protocol with OPAQUE. We are currently using [opaque-ke](https://docs.rs/opaque-ke/2.0.0-pre.2/opaque_ke/index.html), which currently implements [version 09 of the IETF RFC](https://datatracker.ietf.org/doc/draft-irtf-cfrg-opaque/09/). This library is under active development, as is the IETF draft. An earlier release of this repository has been audited by NCC Group in June 2021. 
