@@ -1,25 +1,27 @@
 
 # Authenticate
-The local client inputs a password and receives an "export key", which we will consider as a series of bytes, as output. The key server receives as output some user-specific authentication material, which it can compare to its stored data to verify authentication.
+The local client inputs a user ID and a password and receives an "export key", which we will consider as a valid symmetric encryption key, as output. The key server receives as output some user-specific authentication material, which it can compare to its stored data to verify authentication.
+
+Both parties recieve an open channel as output, which satisfies mutual authentication, confidentiality, and integrity.
 
 
 # Generate a secret
 
-This interaction is initiated by the local client application, when the user requests to create a new self-custodial secret.
+The local client component can generate a secret. Using a cryptographically secure pseudo-random number generator with a random seed, generate 256 bits of output.
 
-1. The calling application initiates generation of a new secret via the local client API. They specify the type of secret (e.g. arbitrary bytes, ECDSA key pair) and provide a communication session with the key server.
+Generate a unique tag to associate with the secret (unique among secrets stored by the local client).
 
-2. The local client [_authenticates_](#authenticate) with the key server and receives an export key. It transforms the export key into an [encyption scheme] key.
+# Generate and store a secret locally
+The local client component can run the [generate](generate-a-secret) protocol. Then, store the tag and the secret as a pair.
 
-3. The local client indicates to the key server that they would like to generate a secret. The server sends random bytes.
+# Generate and store a secret remotely
+The local client must
+1. Run the [authenticate](authenticate) protocol to retrieve an export key and an open channel.
+2. Run the [generate](generate-a-secret) protocol to get a tag and a secret.
+3. Use the export key to encrypt the secret.
+4. Send the tag and encrypted secret over the open channel.
 
-4. The local client runs the key generation protocol. The input is a random number generator and the random bytes from the server. The protocol computes a deterministic, pseudorandom function over the inputs, the output of which is the arbitrary secret. 
-If the secret is a type other than "arbitrary bytes," the key server may do additional processing on the output to make sure it meets the requirements of the secret type and, if appropriate, computes the corresponding public component. 
+The key server generates a unique secret ID for the key by generating 256 bits of randomness and hashing it with the tag to get an ID for the secret (if the ID is not unique among the key server's stored IDs, try again).
+Then, store the user ID (from authentication), the secret ID and encrypted secret.
 
-5. The local client encrypts the secret using user-specific authentication material from the communication session. They send the encrypted secret, the optional public component, and their user ID to the key server.
-
-6. The key server selects a unique key ID (among its existing set of IDs for secrets). It verifies that the user ID matches the authenticated user, then stores the user ID, the key ID, the encrypted secret, and the (optional) public component in their database. 
-
-7. The key server returns the key ID to the local client application.
-
-8. The local client returns the public portions of the new secret, including the key ID and the public component (if any), to the calling application.
+To conclude, the key server sends the secret ID to the local client.
