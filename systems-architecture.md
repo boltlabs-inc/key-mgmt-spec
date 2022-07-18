@@ -2,18 +2,18 @@
 
 ## Components
 
-### Local Client 
+### Local client 
 This library component is integrated into Service Provider software that runs on the asset owner's device. The Service Provider may choose to directly integrate this library into a mobile application or as hardened WASM into a browser-based service. This component interfaces with the key server component. 
 
 This component is responsible for realizing [the asset owner workflows](current-development-phase.md#workflows) in the current development phase.
 
-### Key Server
+### Key server
 The library component is integrated into a host server run by the Service Provider or an external cloud provider. This component interfaces with the local client.
 
 This component is responsible for encrypted storage of secrets on behalf of the asset owner. That is, the key server performs operations on secrets as requested by the asset owner. See [the asset owner workflows](current-development-phase.md#workflows) for more information on the allowed operations. 
 
 ## Networking
-### Session Requirements
+### Session requirements
 We wish to ensure the following in our implementation:
 1. Logical sessions between the client and key server should be independent of the underlying transport layer. This allows:
     1. Resumption between different actual underlying connections.
@@ -27,19 +27,19 @@ We wish to ensure the following in our implementation:
         1. Request sessions MUST provide mutual entity authentication.
         1. Request sessions MUST provide confidentiality and integrity.
 
-### Session Details
-#### Underlying Transport Layer
+### Session details
+#### Underlying transport layer
 We assume a Public Key Infrastructure (PKI). For all session types, the local client first authenticates the key server and opens a channel using TLS 1.3.
   - [TODO](https://github.com/boltlabs-inc/key-mgmt-spec/issues/22): A PKI and TLS configuration must be selected and the details added to this specification in this section and [here](current-development-phase.md#cryptographic-protocol-and-implementation-dependencies) as appropriate.
 
-#### Registration Session
+#### Registration session
 
 1. The client authenticates the key server and opens a channel with the key server as specified [above](#underlying_transport_layer).
 1. The client and key server run the OPAQUE registration stage; see [this section](current-development-phase.md#cryptographic-protocol-and-implementation-dependencies) for protocol version and dependency information.
     1. The client receives as output a value `export_key`, which is a pseudorandom value, independent of all other OPAQUE protocol values, that is known only to the client.
     1. The key server receives as output a record that corresponds to the client's registration.
 
-#### Request Session
+#### Request session
 
 1. The client authenticates the key server and opens a channel with the key server as specified [above](#underlying_transport_layer).
 1. The client and key server mutually authenticate via the OPAQUE protocol; see [this section](current-development-phase.md#cryptographic-protocol-and-implementation-dependencies) for protocol version and dependency information.

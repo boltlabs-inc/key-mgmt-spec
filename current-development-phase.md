@@ -15,7 +15,7 @@ There are two basic components: a [local client](systems-architecture.md#local_c
 ## Workflows
 We provide sketches of the basic generation, storage, and use of arbitrary secrets below. These flows are initiated by the asset owner. 
 
-### Setting up Secure Channels with the Key Server
+### Setting up secure channels with the key server
 1. The asset owner may _register_ with the key server via an asymmetric password-authenticated key exchange protocol.
     1. Registration MUST occur via a channel that satisfies authentication of the server, confidentiality, and integrity.
 1. The asset owner may _open an authenticated session_ with the key server via an asymmetric password-authenticated key exchange protocol. 
