@@ -1,4 +1,4 @@
-# Current Development Phase: Arbitrary Secrets Proof of Concept
+# Arbitrary Secrets Proof of Concept Overview
 
 In this phase, we want to build a general-purpose, human-centric system that stores and retrieves secrets on a single server. This proof of concept (PoC) will include basic cryptography to realize an end-to-end encrypted storage of arbitrary secrets. This constitutes a fundamental building block of our larger imagined digital asset management system. 
 
@@ -7,16 +7,23 @@ In this phase, we want to build a general-purpose, human-centric system that sto
 - All workflows MUST be initiated from a local device owned and operated by a human, namely the asset owner.
 - There is only one key server. This key server is either run on external cloud infrastructure or hosted locally by a service provider.
 
+## System Architecture
+See the [Systems Architecture page](systems-architecture.md) for details.
+
+There are two basic components: a [local client](systems-architecture.md#local_client) (which runs on an asset owner device and initiates all workflows) and a [key server](systems-architecture.md#key_server) (which provides the storage and retrieval of arbitrary secrets). These components communicate over secure channels at all times. 
 
 ## Workflows
-We provide sketches of the generation, storage, and use of arbitrary secrets below, focusing on the high-level system flows initiated by the asset owner. 
+We provide sketches of the basic generation, storage, and use of arbitrary secrets below. These flows are initiated by the asset owner. 
 
+### Setting up Secure Channels with the Key Server
 1. The asset owner may _register_ with the key server via an asymmetric password-authenticated key exchange protocol.
     1. Registration MUST occur via a channel that satisfies authentication of the server, confidentiality, and integrity.
 1. The asset owner may _open an authenticated session_ with the key server via an asymmetric password-authenticated key exchange protocol. 
     1. Once established, the asset owner can make operation requests on secrets to the key server. 
     1. The session MUST provide a secure channel that satisfies mutual authentication, confidentiality, and integrity.
 1. The asset owner may _close_ a session that the asset owner previously established with the key server.
+
+### Operations on arbitrary secrets
 1. The asset owner can _generate_ a secret locally.
     1. This secret MUST be randomly generated according to the uniform distribution.
     1. This secret should default to 256-bits.

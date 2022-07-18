@@ -1,4 +1,4 @@
-# Systems Architecture
+# System Architecture
 
 ## Components
 
@@ -23,7 +23,7 @@ We wish to ensure the following in our implementation:
         1. Registration sessions have no requirement for authentication of the asset owner, although future versions of this project may provide this as an optional feature for the Service Provider.
         1. Registration sessions MUST authenticate the key server to the local client.
         1. Registration sessions MUST provide confidentiality and integrity.
-    1. A _request session_: This type of session is opened when an asset owner who has previously registered with the system sends a request for the key sever to perform an operation on a secret (i.e., store, retrieve, audit).
+    1. A _request session_: This type of session is opened when an asset owner who has previously registered with the system sends a request for the key sever to perform an operation on a secret (i.e., store, retrieve, audit, import, export).
         1. Request sessions MUST provide mutual entity authentication.
         1. Request sessions MUST provide confidentiality and integrity.
 
@@ -46,7 +46,4 @@ We assume a Public Key Infrastructure (PKI). For all session types, the local cl
     1. The client receives as output two values, an `export_key` (matching that from the registration phase) and a `session_key` (which is the output of an authenticated key exchange).
     1. The server receives as output a `session_key` matching that of the client.
 1. The client and server open an encrypted channel secured under a key derived from `session_key`. [TODO](https://github.com/boltlabs-inc/key-mgmt-spec/issues/29): Include additional details here.
-1. The client sends their request (i.e., one of store, retrieve, audit) to the key server.
-
-TODO: should specify key server operations more clearly.
-
+1. The client sends their request (i.e., one of store, retrieve, audit, import, export) to the key server.
