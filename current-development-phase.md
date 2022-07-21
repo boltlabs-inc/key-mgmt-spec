@@ -48,6 +48,7 @@ We provide sketches of the basic generation, storage, and use of arbitrary secre
 1. The asset owner may _audit_ the operations performed by the key server on a given secret. This allows the asset owner to retrieve a log of operations from the key server.
     1. Audit log retrieval MUST occur via a mutually authenticated channel that satisfies confidentiality and integrity.
     1. Audit logs should be portable, i.e., easily exportable from the system.
+    1. Non-normative note: Given the above properties, we do not achieve integrity of the audit logs in the presence of a cheating key server. Future work may address this concern.
 
 ## Cryptographic Protocol and Implementation Dependencies
 1. We instantiate the asymmetric password-based authenticated key exchange protocol with OPAQUE. We are currently using [opaque-ke](https://docs.rs/opaque-ke/2.0.0-pre.2/opaque_ke/index.html), which currently implements [version 09 of the IETF RFC](https://datatracker.ietf.org/doc/draft-irtf-cfrg-opaque/09/). This library is under active development, as is the IETF draft. An earlier release of this repository has been audited by NCC Group in June 2021. 
