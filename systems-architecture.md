@@ -2,15 +2,20 @@
 
 ## Components
 
-### Local client 
-This library component is integrated into Service Provider software that runs on the asset owner's device. The Service Provider may choose to directly integrate this library into a mobile application or as hardened WASM into a browser-based service. This component interfaces with the key server component. 
+### Client 
+This software MUST run on the asset owner's device in order for the desired security property to be achieved. 
+The client functionality is split between a library and a demo repository that shows how to integrate the library into a human-facing application; see [here](repository-list.md) for more details. This component interfaces with the key server component and is responsible for realizing [the asset owner workflows](current-development-phase.md#workflows) in the current development phase.
 
-This component is responsible for realizing [the asset owner workflows](current-development-phase.md#workflows) in the current development phase.
+In practice, the Service Provider may choose to directly integrate the library component into a mobile application or as hardened WASM into a browser-based service. 
+
+
 
 ### Key server
-The library component is integrated into a host server run by the Service Provider or an external cloud provider. This component interfaces with the local client.
+The library component is integrated into a host server and interfaces with the client component.
 
 This component is responsible for encrypted storage of secrets on behalf of the asset owner. That is, the key server performs operations on secrets as requested by the asset owner. See [the asset owner workflows](current-development-phase.md#workflows) for more information on the allowed operations. 
+
+In practice, the Service Provider may choose to either run the host server themselves or use one or more external cloud providers. The best security properties will be achieved by distributing trust across multiple cloud providers.
 
 ## Networking
 ### Session requirements

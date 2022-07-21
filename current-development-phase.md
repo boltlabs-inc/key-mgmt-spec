@@ -1,4 +1,4 @@
-# Arbitrary Secrets Proof of Concept Overview
+# Arbitrary Secrets Proof of Concept 
 
 In this phase, we want to build a general-purpose, human-centric system that stores and retrieves secrets on a single server. This proof of concept (PoC) will include basic cryptography to realize an end-to-end encrypted storage of arbitrary secrets. This constitutes a fundamental building block of our larger imagined digital asset management system. 
 
