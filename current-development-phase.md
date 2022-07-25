@@ -27,9 +27,11 @@ We provide sketches of the basic generation, storage, and use of arbitrary secre
 1. The asset owner can _generate_ a secret locally.
     1. This secret MUST be randomly generated according to the uniform distribution.
     1. This secret should default to 256-bits.
-1. The asset owner can _store_ a secret, either on the key server or locally.
+1. The asset owner can _store_ a secret. By default the secret is stored both locally and at the key server.
     1. Storage on a key server MUST occur via a mutually authenticated channel that satisfies confidentiality and integrity. 
     1. Local storage on the user's device should be secure.
+    1. An additional functionality that allows the user to store secrets on the remote key server onlyn WILL be added in the future. 
+    1. An additional functionality that allows the user to store secrets on the local device only may be added in the future. and on the remote key server only may be added in the future.
 1. The asset owner can _retrieve_ a secret from the key server. 
     1. Retrieval from a key server MUST occur via a mutually authenticated channel that satisfies confidentiality and integrity. 
     1. The key retrieved MUST be a key associated to the authenticated user.
@@ -51,12 +53,21 @@ We provide sketches of the basic generation, storage, and use of arbitrary secre
     1. Non-normative note: Given the above properties, we do not achieve integrity of the audit logs in the presence of a cheating key server. Future work may address this concern.
 
 ## Cryptographic Protocol and Implementation Dependencies
+
 - We instantiate the asymmetric password-based authenticated key exchange protocol with OPAQUE. We are using [opaque-ke](https://docs.rs/opaque-ke/2.0.0-pre.3/opaque_ke/index.html), which currently implements [version 09 of the IETF RFC](https://datatracker.ietf.org/doc/draft-irtf-cfrg-opaque/09/). This library is under active development, as is the IETF draft. An earlier release of this repository has been audited by NCC Group in June 2021. 
     - This implementation relies on [voprf](https://github.com/novifinancial/voprf), which is tracking [the IETF RFC on OPRFs](https://datatracker.ietf.org/doc/draft-irtf-cfrg-voprf/).
     - As both of the above RFCs are in flux, we expect ongoing updates.
     - Following the terminology of the RFC, we use the following OPAQUE-3DH configuration: OPRF(ristretto255, SHA-512), HKDF-SHA-512, HMAC-SHA-512, SHA-512, ristretto255, with Argon2 as the KSF, and no shared context information. 
+
 - TLS 1.3. 
     - [TODO](https://github.com/boltlabs-inc/key-mgmt-spec/issues/22): Select and add config, setup, and implementation dependency information.
+- Cryptographic Hash Function `Hash`. We use SHA3-256 throughout.
+- CSPRNG, `rng`.
+- A symmetric AEAD scheme that consists of:
+    - An encryption function `Enc` that takes a pair `(key, msg, data)`, where `key` is the symmetric key, `msg` is the message to be encrypted, and `data` is OPTIONAL associated data, and outputs a ciphertext.
+    - A decryption function `Dec` that takes a pair `(key, ciphertext, data)`, where `key` is the symmetric key,`ciphertext` is the a ciphertext to be decrypted, and `data` is OPTIONAL associated data, and outputs a plaintext.
+
+TODO: Add dependency information for the above.
 
 ## Expected Outcomes
 A working command-line demo with cryptography for handling arbitrary secrets. 
