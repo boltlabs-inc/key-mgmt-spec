@@ -12,3 +12,4 @@ A [repository]() that demonstrates usage of the `local-client` and `key-server` 
 This demo contains two parts:
 1. A sample human-facing calling application that integrates the `local-client` library. That is, this application provides an interface between the asset owner and the key-mgmt `local-client` API.
 1. A demonstration setup for the key server.
+1. A Dockerfile for testing the sample calling app with the `local-client` library and key server on any machine.
