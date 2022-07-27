@@ -19,28 +19,27 @@ Input:
     - TODO: What is the length of this user identifier? Is this a global default?
 
 Output:
-- `key_tag`: TODO
 - `key_id`: TODO
 
 Protocol:
 1. The client:
    1. Checks if there is an existing open session with the key server and the input `user_id` and opens a [Request Session](systems-architecture.md#request-session) if not. 
    1. Calls `retrieve_storage_key`, the output of which is `storage_key`.
-   1. Runs the [generate](#generate-a-secret) protocol to get a tag `tag` and a secret `arbitrary_key`.
-   1. Sends a request message to the key server over the secure channel. This message MUST indicate the desire to store a secret remotely and contain `user_id` and `tag`.
+   1. Runs the [generate](#generate-a-secret) protocol to get a secret `arbitrary_key`.
+   1. Sends a request message to the key server over the secure channel. This message MUST indicate the desire to store a secret remotely and contain `user_id`.
 1. The key server:
-   1. Runs a validity check on the received `tag` and `user_id` (i.e., `tag` and `user_id` must both be of the expected format and length, and `user_id` should match the current authenticated session).
+   1. Runs a validity check on the received `user_id` (i.e., `user_id` must be of the expected format and length, and should match the current authenticated session).
    1. Generates `key_id`, a globally unique identifier as follows:
         1. Generates `randomness`, 256 bits of randomness using `rng`.
-        1. Computes `key_id = Hash(domain_sep, user_id, tag, randomness)`, where `domain_sep` is a static string acting as a domain separator.
+        1. Computes `key_id = Hash(domain_sep, len, user_id, 32, randomness)`, where `domain_sep` is a static string acting as a domain separator and `len` is the length of `user_id` in bytes.
         1. This functionality should fail (with negligible probability) if the generated identifier is not unique among the key server's stored identifiers. 
         1. Sends `key_id` to the client over the secure channel.
 1. The client:
-    1. Computes `Enc(storage_key, arbitrary_key, user_id||tag||key_id)` and sends the resulting ciphertext to the key server over the secure channel.
+    1. Computes `Enc(storage_key, arbitrary_key, user_id||key_id)` and sends the resulting ciphertext to the key server over the secure channel.
     1. [Stores](#store-a-secret-locally) the ciphertext and associated data locally.
 1. The key server:
     1. Runs a validity check on the received ciphertext (i.e., the ciphertext must be of the expected format and length).
-    1. Stores a tuple containing the received ciphertext, `tag`, and `user_id` in the server database.
+    1. Stores a tuple containing the received ciphertext and `user_id` in the server database.
         - [TODO](https://github.com/boltlabs-inc/key-mgmt-spec/issues/28): Add a reference to the security requirements for server storage when complete.
     1. Sends an ACK to the client.
 
@@ -63,13 +62,11 @@ Input:
   - A seeded CSPRNG `rng`.
 
 Output: 
-   - A unique 16-byte tag, `key_tag`.
    - An element `arbitrary_key`, where `arbitrary_key` is a randomly generated secret length `len` in bytes.
    
 Protocol:
   1. Generate `arbitrary_key` as `len` bytes of randomness output from `rng`.
-  1. Generate `tag` as 16 bytes of arbitrary data. This tag MUST be unique among secrets stored by the local client. It can be generated deterministically (e.g. incrementing by 1 for each new secret) or pseudorandomly.
-  1. Output `tag` and `arbitrary_key`.
+  1. Output `arbitrary_key`.
 
 ### Client-side storage
 
