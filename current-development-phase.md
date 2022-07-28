@@ -30,7 +30,7 @@ We provide sketches of the basic generation, storage, and use of arbitrary secre
 1. The asset owner can _store_ a secret. By default the secret is stored both locally and at the key server.
     1. Storage on a key server MUST occur via a mutually authenticated channel that satisfies confidentiality and integrity. 
     1. Local storage on the user's device should be secure.
-    1. An additional functionality that allows the user to store secrets on the remote key server onlyn WILL be added in the future. 
+    1. An additional functionality that allows the user to store secrets on the remote key server only WILL be added in the future.
     1. An additional functionality that allows the user to store secrets on the local device only may be added in the future. and on the remote key server only may be added in the future.
 1. The asset owner can _retrieve_ a secret from the key server. 
     1. Retrieval from a key server MUST occur via a mutually authenticated channel that satisfies confidentiality and integrity. 
