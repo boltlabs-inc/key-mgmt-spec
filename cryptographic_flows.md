@@ -16,10 +16,10 @@ This client-side functionality generates a secret locally and stores the result 
 
 Input:
 - `user_id`, A (globally unique) user identifier.
-    - TODO: What is the length of this user identifier? Is this a global default?
+    - [TODO](https://github.com/boltlabs-inc/key-mgmt-spec/issues/42): What is the length of this user identifier? Is this a global default?
 
 Output:
-- `key_id`: TODO
+- `key_id`: [TODO](https://github.com/boltlabs-inc/key-mgmt-spec/issues/42): Define properties of this ID.
 
 Protocol:
 1. The client:
@@ -43,7 +43,7 @@ Protocol:
         - [TODO](https://github.com/boltlabs-inc/key-mgmt-spec/issues/28): Add a reference to the security requirements for server storage when complete.
     1. Sends an ACK to the client.
 
-TODO: retries? what is the client behavior after receipt of ACK?
+[TODO](https://github.com/boltlabs-inc/key-mgmt-spec/issues/43): Determine failure and retry behavior for this protocol: what is the client behavior after receipt of ACK?
 
 ## Cryptographic and Supporting Operations
 ### External dependencies
