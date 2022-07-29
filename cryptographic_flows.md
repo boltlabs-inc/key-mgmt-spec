@@ -29,9 +29,7 @@ Protocol:
    1. Runs a validity check on the received `user_id` (i.e., `user_id` must be of the expected format and length, and should match the current authenticated session).
    1. Generates `key_id`, a globally unique identifier as follows:
         1. Generates `randomness` as 32 bytes of randomness output from `rng`.
-        1. Computes `key_id` as `Hash(domain_sep, len, user_id, 32, randomness)`, truncated to 128-bits if necessary, where:
-            - `domain_sep` is a static string acting as a domain separator, prepended with its length in bytes, and 
-            - `len` is the length of `user_id` in bytes.
+        1. Computes `key_id` as `Hash(domain_sep, 16, user_id, 32, randomness)`, truncated to 128-bits if necessary, where `domain_sep` is a static string acting as a domain separator, prepended with its length in bytes.
         1. This functionality should fail (with negligible probability) if the generated identifier is not unique among the key server's stored identifiers. 
         1. Sends `key_id` to the client over the secure channel.
 1. The client:
