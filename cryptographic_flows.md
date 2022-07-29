@@ -15,32 +15,32 @@ We will assume the following:
 This client-side functionality generates a secret locally and stores the result both locally and remotely:
 
 Input:
-- `user_id`, A (globally unique) user identifier.
-    - [TODO](https://github.com/boltlabs-inc/key-mgmt-spec/issues/42): What is the length of this user identifier? Is this a global default?
+- `user_id`, a 128-bit globally unique identifier (GUID) representing the identity of the asset owner.
 
 Output:
-- `key_id`: [TODO](https://github.com/boltlabs-inc/key-mgmt-spec/issues/42): Define properties of this ID.
+- `key_id`, a 128-bit unique identifier representing a key, computed as the (possibly truncated) output of `Hash` over user and scheme parameters and a randomly generated salt.
 
 Protocol:
 1. The client:
-   1. Checks if there is an existing open session with the key server and the input `user_id` and opens a [Request Session](systems-architecture.md#request-session) if not. 
+   1. Checks if there is an existing open session with the key server and the input `user_id` and [opens a Request Session](systems-architecture.md#request-session) if not. 
    1. Calls `retrieve_storage_key`, the output of which is `storage_key`.
-   1. Runs the [generate](#generate-a-secret) protocol to get a secret `arbitrary_key`.
    1. Sends a request message to the key server over the secure channel. This message MUST indicate the desire to store a secret remotely and contain `user_id`.
 1. The key server:
    1. Runs a validity check on the received `user_id` (i.e., `user_id` must be of the expected format and length, and should match the current authenticated session).
    1. Generates `key_id`, a globally unique identifier as follows:
-        1. Generates `randomness`, 256 bits of randomness using `rng`.
-        1. Computes `key_id = Hash(domain_sep, len, user_id, 32, randomness)`, where `domain_sep` is a static string acting as a domain separator and `len` is the length of `user_id` in bytes.
+        1. Generates `randomness` as 32 bytes of randomness output from `rng`.
+        1. Computes `key_id` as `Hash(domain_sep, len, user_id, 32, randomness)`, truncated to 128-bits if necessary, where:
+            - `domain_sep` is a static string acting as a domain separator, prepended with its length in bytes, and 
+            - `len` is the length of `user_id` in bytes.
         1. This functionality should fail (with negligible probability) if the generated identifier is not unique among the key server's stored identifiers. 
         1. Sends `key_id` to the client over the secure channel.
 1. The client:
+    1. Runs the [generate](#generate-a-secret) protocol on input `(32, rng, user_id||key_id)` to get a secret `arbitrary_key`.
     1. Computes `Enc(storage_key, arbitrary_key, user_id||key_id)` and sends the resulting ciphertext to the key server over the secure channel.
     1. [Stores](#store-a-secret-locally) the ciphertext and associated data locally.
 1. The key server:
     1. Runs a validity check on the received ciphertext (i.e., the ciphertext must be of the expected format and length).
-    1. Stores a tuple containing the received ciphertext and `user_id` in the server database.
-        - [TODO](https://github.com/boltlabs-inc/key-mgmt-spec/issues/28): Add a reference to the security requirements for server storage when complete.
+    1. [Stores](#server-side-storage) a tuple containing the received ciphertext and `user_id` in the server database.
     1. Sends an ACK to the client.
 
 [TODO](https://github.com/boltlabs-inc/key-mgmt-spec/issues/43): Determine failure and retry behavior for this protocol: what is the client behavior after receipt of ACK?
@@ -60,13 +60,20 @@ See [here](current-development-phase.md#cryptographic-protocol-and-implementatio
 Input:
   - A length `len` in bytes. Default length is 32 bytes.
   - A seeded CSPRNG `rng`.
+  - An optional context string, `context`, that SHOULD include non-sensitive application-specific context and parameter choices for usage of the generated secret.
 
 Output: 
-   - An element `arbitrary_key`, where `arbitrary_key` is a randomly generated secret length `len` in bytes.
-   
+   - An element `arbitrary_key`, where `arbitrary_key` is a tuple consisting of:
+       - A randomly generated secret `secret` of length `len` in bytes.
+       - The input context string, `context`.
+    
+
 Protocol:
-  1. Generate `arbitrary_key` as `len` bytes of randomness output from `rng`.
-  1. Output `arbitrary_key`.
+  1. Generate `secret` as `len` bytes of randomness output from `rng`.
+  1. Output `arbitrary_key` as the pair `(secret, context)`.
+
+Usage guidance:
+Code that consumes an `arbitrary_key` SHOULD include validation checks specific to the context before use, i.e., an `arbitrary_key` SHOULD be used only in the context for which it was initially generated.
 
 ### Client-side storage
 
