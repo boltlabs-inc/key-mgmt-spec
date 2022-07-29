@@ -46,7 +46,8 @@ Protocol:
 
 ## Cryptographic and Supporting Operations
 ### External dependencies
-This includes:
+See [the current development phase](current-development-phase.md#cryptographic-protocol-and-implementation-dependencies) for our selections. Dependencies include:
+
 - Cryptographic Hash Function `Hash`. 
 - CSPRNG, `rng`.
 - A symmetric AEAD scheme that consists of:
@@ -58,7 +59,6 @@ This includes:
 
 Inter-dependency constraints include:
 - The length of the a key for `Enc` must be no more than 255 times the length of the output of `Hash`.
-See [here](current-development-phase.md#cryptographic-protocol-and-implementation-dependencies) for our selections.
 
 ### Generate a secret
 Input:
