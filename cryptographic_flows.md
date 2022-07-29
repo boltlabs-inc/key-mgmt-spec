@@ -40,7 +40,7 @@ Output:
 Protocol:
 1. The client:
    1. [Opens a request session](systems-architecture.md#request-session) for the given user id `user_id`. 
-   1. Calls [`retrieve_storage_key`](#retrieve-storagekey-functionality), the output of which is `storage_key`.
+   1. Calls [`retrieve_storage_key`](#retrievestoragekey-functionality), the output of which is `storage_key`.
    1. Sends a request message to the key server over the session's secure channel. This message MUST indicate the desire to store a secret remotely and contain `user_id`.
 1. The key server:
    1. Runs a validity check on the received request and `user_id`(i.e., there must be a valid open request session, the request must conform to the expected format, and `user_id` must be of the expected format and length, and should match that of the open request session). If this check fails, the server MUST reject the request.
@@ -73,18 +73,18 @@ Output:
 Protocol:
 1. The client:
    1. [Opens a request session](systems-architecture.md#request-session) for the given user id `user_id`. 
-   1. Calls [`retrieve_storage_key`](#retrieve-storagekey-functionality), the output of which is `storage_key`. The implementation SHOULD keep this key in memory only and not write to disk.
+   1. Calls [`retrieve_storage_key`](#retrievestoragekey-functionality), the output of which is `storage_key`. The implementation SHOULD keep this key in memory only and not write to disk.
    1. [Retrieves](#client-side-storage) the ciphertext `ciphertext` associated to `key_id` from local storage. 
         1. If successful, computes `arbitrary_key = Dec(storage_key, ciphertext, user_id||key_id)`, outputs `arbitrary_key`, and closes the request session. 
         1. Otherwise, continues.
    1. Sends a request message to the key server over the open session's secure channel. This message MUST indicate the desire to retrieve the backed up secret and contain `user_id` and `key_id`.
 1. The key server:
-    1. Runs a validity check on the received request, `user_id`, and `key_id`. That is,
+    1. Runs a validity check on the received request, `user_id`, and `key_id`.
+       If this check fails, the server MUST reject the request:
         1. There must be a valid open request session, 
         1. The request must conform to the expected format and content, 
         1. The `user_id` must be of the expected format and length, and should match that of the open request session,
         1. The `key_id` must be associated with the given `user_id` in the key server's database.
-       If this check fails, the server MUST reject the request.
     1. [Retrieves](#server-side-storage) the associated ciphertext and associated data for the given pair `(user_id, key_id)` from its database and sends this ciphertext, together with the associated data, to the client.
 1. The client:
     1. Computes `arbitrary_key = Dec(storage_key, ciphertext, user_id||"storage key")`, where `ciphertext` is the received ciphertext from the key server.
@@ -150,8 +150,11 @@ Protocol:
     1. Runs a validity check on the received request and `user_id` (i.e., there must be a valid open request session, the request must conform to the expected format and content, and `user_id` must be of the expected format and length, and should match that of the open request session). If this check fails, the server MUST reject the request.
     1. [Retrieves](#server-side-storage) the associated storage key ciphertext for the given user from its database and sends this ciphertext to the client.
 1. The client:
-    1. Computes `Dec(export_key, ciphertext, user_id||"storage key")`, where `ciphertext` is the received ciphertext from the key server, and outputs `storage_key`.
-       - TODO: update this to be consistent with the derived key used instead of `export_key` here.
+    1. Derives  a symmetric `opaque_encryption_key` for [`Enc`](#external-dependencies) from the `export_key`. The opaque encryption key will have length `len` bytes, the default for `Enc`.
+        1. Set `context = "opaque-derived stored client key for <AEAD choice and params>"`.
+        1. Compute `secret = HKDF("opaque encryption key", export_key, context, len)`.
+        1. Define `opaque_encryption_key = (secret, context)`.
+    1. Computes `Dec(opaque_encryption_key, ciphertext, user_id||"storage key")`, where `ciphertext` is the received ciphertext from the key server, and outputs `storage_key`.
 
 Usage guidance: Code that calls the `retrieve_storage_key` functionality SHOULD NOT write the output `storage_key` to disk and should make a best effort to drop this key from temporary memory after use of this key is completed.
 
