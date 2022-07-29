@@ -24,7 +24,7 @@ Protocol:
 1. The client:
    1. Checks if there is an existing open session with the key server and the input `user_id` and [opens a Request Session](systems-architecture.md#request-session) if not. 
    1. Calls `retrieve_storage_key`, the output of which is `storage_key`.
-   1. Sends a request message to the key server over the secure channel. This message MUST indicate the desire to store a secret remotely and contain `user_id`.
+   1. Sends a request message to the key server over the session's secure channel. This message MUST indicate the desire to store a secret remotely and contain `user_id`.
 1. The key server:
    1. Runs a validity check on the received `user_id` (i.e., `user_id` must be of the expected format and length, and should match the current authenticated session).
    1. Generates `key_id`, a globally unique identifier as follows:
@@ -42,6 +42,7 @@ Protocol:
     1. Runs a validity check on the received ciphertext (i.e., the ciphertext must be of the expected format and length).
     1. [Stores](#server-side-storage) a tuple containing the received ciphertext and `user_id` in the server database.
     1. Sends an ACK to the client.
+1. The client closes the session.
 
 [TODO](https://github.com/boltlabs-inc/key-mgmt-spec/issues/43): Determine failure and retry behavior for this protocol: what is the client behavior after receipt of ACK?
 
