@@ -131,7 +131,7 @@ Protocol:
 Usage guidance:
 Code that consumes an `arbitrary_key` SHOULD include validation checks specific to the context before use, i.e., an `arbitrary_key` SHOULD be used only in the context for which it was initially generated.
 
-### `Retrieve_storage_key` functionality
+### `retrieve_storage_key` functionality
 This functionality allows the client to request and receive the key `storage_key` from the key server, where `storage_key` is a symmetric key for the implementation's selected AEAD used for remote storage.
 
 Inputs:
