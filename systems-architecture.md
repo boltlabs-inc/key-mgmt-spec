@@ -52,7 +52,7 @@ We assume a Public Key Infrastructure (PKI). For all session types, the local cl
 1. We have the following requirements for using an open registration session:
     1. All messages sent between the client and server MUST be over this encrypted channel, i.e., all messages should be encrypted under the given shared key. 
     1. The key server MUST additionally reject all messages sent over this channel that fail the AEAD verification checks.
-    1. The only valid request for a registration is a request to [complete registration](TODO: fill me in).
+    1. The only valid request for a registration is a request to [complete registration](register.md#registration).
     1. The key server MUST close the session after completion of the complete registration request.
         - [TODO](https://github.com/boltlabs-inc/key-mgmt-spec/issues/51): allow more than one request. See similar TODO note below.
 
