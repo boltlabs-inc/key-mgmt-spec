@@ -54,7 +54,7 @@ We assume a Public Key Infrastructure (PKI). For all session types, the local cl
     1. The key server MUST additionally reject all messages sent over this channel that fail the AEAD verification checks.
     1. The only valid request for a registration is a request to [complete registration](TODO: fill me in).
     1. The key server MUST close the session after completion of the complete registration request.
-        - TODO: allow more than one request. See similar TODO note below.
+        - [TODO](https://github.com/boltlabs-inc/key-mgmt-spec/issues/51): allow more than one request. See similar TODO note below.
 
 ### Opening and using a request session
 
@@ -70,4 +70,4 @@ We assume a Public Key Infrastructure (PKI). For all session types, the local cl
     1. The key server MUST additionally reject all messages sent over this channel that fail the AEAD verification checks.
     1. The client may then send a single request (i.e., one of store, retrieve, audit, import, export) to the key server during this session.
     1. The key server MUST close the session upon completion of the given request.
-        - TODO: Write issue on including recommendations for sane request limits and timeouts.
+        - [TODO](https://github.com/boltlabs-inc/key-mgmt-spec/issues/51): Set recommendations for sane request limits and timeouts.
