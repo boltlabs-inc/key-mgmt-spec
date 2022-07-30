@@ -8,17 +8,15 @@ An asset owner that has not previously interacted with the key server MUST regis
     1. Generates `user_id`, a globally unique identifier (GUID). 
         - [TODO #52](https://github.com/boltlabs-inc/key-mgmt-spec/issues/52): Specify how user IDs are created.
     1. [Opens a registration session](systems-architecture.md#opening-a-registration-session) with the key server.
-    1. Derives `master_key`, a symmetric key of length `len` bytes for [`Enc`](#external-dependencies), from  `export_key`, where the length `len` should be the default for `Enc`, as follows:
-        1. Set `context = "Lock Keeper master key "`.
-            - [TODO #27](https://github.com/boltlabs-inc/key-mgmt-spec/issues/27) Insert AEAD parameter details.
-        1. Compute `secret = HKDF(export_key, "opaque-derived master key" | context)`.
-        1. Define `master_key = (secret, context)`.
+    1. Derives `master_key`, a symmetric key of length `len` bytes for [`Enc`](#external-dependencies), from  `export_key`, as follows:
+        1. Length `len` should be the default for `Enc`.
+        1. Set `master_key = HKDF(export_key, "OPAQUE-derived Lock Keeper master key")`.
     1. Runs the [generate protocol](cryptographic_flows.md#generate-a-secret) to get a symmetric key `storage_key` for [`Enc`](#external-dependencies) of length 32 bytes.
         - The `storage key` MUST NOT be saved, stored, or used in any context outside this protocol. It must not be passed to the calling application.
-    1. Computes a ciphertext `encrypted_storage_key = Enc(opaque_encryption_key, storage_key, user_id||"storage key")`.
+    1. Computes a ciphertext `encrypted_storage_key = Enc(master_key, storage_key, user_id||"storage key"|context)`.
     1. <a name="complete-registration"></a> Sends a request message to the key server over the registration session's secure channel. This message MUST indicate the desire to _complete registration_ and contain `user_id` and the ciphertext `encrypted_storage_key`.
     1. Deletes `storage_key` from memory.
-        - [TODO #51](https://github.com/boltlabs-inc/key-mgmt-spec/issues/51) Update this when additional requests are allowed.
+        - [TODO #51](https://github.com/boltlabs-inc/key-mgmt-spec/issues/51): Update this when additional requests are allowed.
 1. The server:
     1. Checks that `user_id` matches that of the authenticated user in the open registration session. If this check fails, the server MUST abort.
     1. Checks that the received ciphertext is of the expected format and length.
@@ -146,20 +144,19 @@ Protocol:
     1. Sends a request message to the key server over the open session's secure channel. This message MUST indicate the desire to retrieve the storage key and contain `user_id`.
 1. The key server:
     1. Runs a validity check on the received request and `user_id` (i.e., there must be a valid open request session, the request must conform to the expected format and content, and `user_id` must be of the expected format and length, and should match that of the open request session). If this check fails, the server MUST reject the request.
-    1. [Retrieves](#server-side-storage) the associated storage key ciphertext for the given user from its database and sends this ciphertext to the client.
+    1. [Retrieves](#server-side-storage) the associated storage key ciphertext for the given user from its database and sends the ciphertext to the client.
 1. The client:
-    1. Derives  a symmetric `opaque_encryption_key` for [`Enc`](#external-dependencies) from the `export_key`. The opaque encryption key will have length `len` bytes, the default for `Enc`.
-        1. Set `context = "opaque-derived stored client key for <AEAD choice and params>"`.
-        1. Compute `secret = HKDF("opaque encryption key", export_key, context, len)`.
-        1. Define `opaque_encryption_key = (secret, context)`.
-    1. Computes `Dec(opaque_encryption_key, ciphertext, user_id||"storage key")`, where `ciphertext` is the received ciphertext from the key server, and outputs `storage_key`.
+    1. Derives `master_key`, a symmetric key of length `len` bytes for [`Enc`](#external-dependencies), from `export_key`, as follows:
+        1. Length `len` should be the default for `Enc`.
+        1. Set `master_key = HKDF(export_key, "OPAQUE-derived Lock Keeper master key")`.
+    1. Computes `storage_key = Dec(master_key, ciphertext, user_id||"storage key")`, where `ciphertext` is the received ciphertext from the key server, and outputs `storage_key`.
 
 Usage guidance: Code that calls the `retrieve_storage_key` functionality SHOULD NOT write the output `storage_key` to disk and should make a best effort to drop this key from temporary memory after use of this key is completed.
 
 ### Client-side storage
 
 For now, simple clear-text storage is acceptable.
-- [TODO #39](https://github.com/boltlabs-inc/key-mgmt-spec/issues/39) Include appropriate requirements for client-side secure storage and generate relevant issues in key-mgmt.
+- [TODO #39](https://github.com/boltlabs-inc/key-mgmt-spec/issues/39): Include appropriate requirements for client-side secure storage and generate relevant issues in key-mgmt.
 
 ### Server-side storage
 - [TODO #28](https://github.com/boltlabs-inc/key-mgmt-spec/issues/28). Include appropriate requirements for server-side secure storage and generate relevant issues in key-mgmt.
