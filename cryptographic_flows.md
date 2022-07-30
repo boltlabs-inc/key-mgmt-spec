@@ -1,16 +1,34 @@
 
 # Operations on Arbitrary Secrets
 
-## Setup
-The asset owner MUST have successfully completed [Registration](https://github.com/boltlabs-inc/key-mgmt-spec/issues/11) to generate and store arbitrary secrets at the server.
-- [TODO](https://github.com/boltlabs-inc/key-mgmt-spec/issues/11#issuecomment-1194099508): Registration details needs to be fleshed out.
-- [TODO]() Authentication details need to be fleshed out.
+## Register
+An asset owner that has not previously interacted with the key server MUST register. Registration proceeds as follows:
+
+1. The client:
+    1. Generates `user_id`, a globally unique identifier (GUID). 
+        - [TODO #52](https://github.com/boltlabs-inc/key-mgmt-spec/issues/52): Specify how user IDs are created.
+    1. [Opens a registration session](systems-architecture.md#opening-a-registration-session) with the key server.
+    1. Derives `master_key`, a symmetric key of length `len` bytes for [`Enc`](#external-dependencies), from  `export_key`, where the length `len` should be the default for `Enc`, as follows:
+        1. Set `context = "Lock Keeper master key "`.
+            - [TODO #27](https://github.com/boltlabs-inc/key-mgmt-spec/issues/27) Insert AEAD parameter details.
+        1. Compute `secret = HKDF(export_key, "opaque-derived master key" | context)`.
+        1. Define `master_key = (secret, context)`.
+    1. Runs the [generate protocol](cryptographic_flows.md#generate-a-secret) to get a symmetric key `storage_key` for [`Enc`](#external-dependencies) of length 32 bytes.
+        - The `storage key` MUST NOT be saved, stored, or used in any context outside this protocol. It must not be passed to the calling application.
+    1. Computes a ciphertext `encrypted_storage_key = Enc(opaque_encryption_key, storage_key, user_id||"storage key")`.
+    1. <a name="complete-registration"></a> Sends a request message to the key server over the registration session's secure channel. This message MUST indicate the desire to _complete registration_ and contain `user_id` and the ciphertext `encrypted_storage_key`.
+    1. Deletes `storage_key` from memory.
+        - [TODO #51](https://github.com/boltlabs-inc/key-mgmt-spec/issues/51) Update this when additional requests are allowed.
+1. The server:
+    1. Checks that `user_id` matches that of the authenticated user in the open registration session. If this check fails, the server MUST abort.
+    1. Checks that the received ciphertext is of the expected format and length.
+    1. [Stores](#server-side-storage) the received ciphertext in a record associated with `user_id`.
+1. The client and server close the session upon completion of the request.
 
 We will assume the following:
-   - `storage_key`, A symmetric key for [`Enc`](#external-dependencies) will be generated client-side during registration. This key will be stored in a ciphertext at the key server, secured under `export_key`.
+   
    - `retrieve_storage_key`, A function will be implemented that allows the client to retrieve and locally decrypt the ciphertext to recover `storage_key`.
-   - `session_key`, A key that is derived during authentication and is shared between the client and the key server. This key can be used as a key for the AEAD scheme `Enc`. In the following, when the client and key server send each other messages, it is assumed that these messages are encrypted using `Enc` under `session_key`. The key server should additionally reject all messages sent over this channel that fail verification checks.
-
+  
 ## Generate and Store
 This client-side functionality generates a secret locally and stores the result both locally and remotely:
 
