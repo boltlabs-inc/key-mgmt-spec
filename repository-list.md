@@ -7,7 +7,7 @@ Our libraries exist in the [`key-mgmt`](https://github.com/boltlabs-inc/key-mgmt
 
 ## Demo Repository
 A [repository]() that demonstrates usage of the `local-client` and `key-server` libraries.<br>
-[TODO](https://github.com/boltlabs-inc/key-mgmt/issues/93) Add link to location above.
+- [TODO #93](https://github.com/boltlabs-inc/key-mgmt/issues/93) Add link to location above.
 
 This demo contains two parts:
 1. A sample human-facing calling application that integrates the `local-client` library. That is, this application provides an interface between the asset owner and the key-mgmt `local-client` API.

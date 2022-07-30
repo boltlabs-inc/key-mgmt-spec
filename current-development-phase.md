@@ -10,12 +10,13 @@ In this phase, we want to build a general-purpose, human-centric system that sto
 ## System Architecture
 See the [Systems Architecture page](systems-architecture.md) for details.
 
-There are two basic components: a [local client](systems-architecture.md#local_client) (which runs on an asset owner device and initiates all workflows) and a [key server](systems-architecture.md#key_server) (which provides the storage and retrieval of arbitrary secrets). These components communicate over secure channels at all times. 
+There are two basic components: a [client](systems-architecture.md#client) (which runs on an asset owner device and initiates all workflows) and a [key server](systems-architecture.md#key-server) (which provides the storage and retrieval of arbitrary secrets). These components communicate over secure channels at all times. 
 
 ## Workflows
 We provide sketches of the basic generation, storage, and use of arbitrary secrets below. These flows are initiated by the asset owner. 
 
 ### Setting up secure channels with the key server
+See the [Networking subsection](systems-architecture.md#networking) on the [Systems Architecture page](systems-architecture.md) for details.
 1. The asset owner may _register_ with the key server via an asymmetric password-authenticated key exchange protocol.
     1. Registration MUST occur via a channel that satisfies authentication of the server, confidentiality, and integrity.
 1. The asset owner may _open an authenticated session_ with the key server via an asymmetric password-authenticated key exchange protocol. 
@@ -24,6 +25,8 @@ We provide sketches of the basic generation, storage, and use of arbitrary secre
 1. The asset owner may _close_ a session that the asset owner previously established with the key server.
 
 ### Operations on arbitrary secrets
+See the [Operations on Arbitrary Secrets page](cryptographic_flows.md#) for details.
+
 1. The asset owner can _generate_ a secret locally.
     1. This secret MUST be randomly generated according to the uniform distribution.
     1. This secret should default to 256-bits.
@@ -53,21 +56,24 @@ We provide sketches of the basic generation, storage, and use of arbitrary secre
     1. Non-normative note: Given the above properties, we do not achieve integrity of the audit logs in the presence of a cheating key server. Future work may address this concern.
 
 ## Cryptographic Protocol and Implementation Dependencies
+- [TODO #49](https://github.com/boltlabs-inc/key-mgmt-spec/issues/49): Add dependency information for the above.
 
+We have the following dependencies:
 - We instantiate the asymmetric password-based authenticated key exchange protocol with OPAQUE. We are using [opaque-ke](https://docs.rs/opaque-ke/2.0.0-pre.3/opaque_ke/index.html), which currently implements [version 09 of the IETF RFC](https://datatracker.ietf.org/doc/draft-irtf-cfrg-opaque/09/). This library is under active development, as is the IETF draft. An earlier release of this repository has been audited by NCC Group in June 2021. 
     - This implementation relies on [voprf](https://github.com/novifinancial/voprf), which is tracking [the IETF RFC on OPRFs](https://datatracker.ietf.org/doc/draft-irtf-cfrg-voprf/).
     - As both of the above RFCs are in flux, we expect ongoing updates.
     - Following the terminology of the RFC, we use the following OPAQUE-3DH configuration: OPRF(ristretto255, SHA-512), HKDF-SHA-512, HMAC-SHA-512, SHA-512, ristretto255, with Argon2 as the KSF, and no shared context information. 
 
 - TLS 1.3. 
-    - [TODO](https://github.com/boltlabs-inc/key-mgmt-spec/issues/22): Select and add config, setup, and implementation dependency information.
-- Cryptographic Hash Function `Hash`. We use SHA3-256 throughout.
+    - [TODO #22](https://github.com/boltlabs-inc/key-mgmt-spec/issues/22): Select and add config, setup, and implementation dependency information.
+- Cryptographic Hash Function `Hash`. We use SHA3-256 throughout in our constructions.
 - CSPRNG, `rng`.
 - A symmetric AEAD scheme that consists of:
     - An encryption function `Enc` that takes a pair `(key, msg, data)`, where `key` is the symmetric key, `msg` is the message to be encrypted, and `data` is OPTIONAL associated data, and outputs a ciphertext.
     - A decryption function `Dec` that takes a pair `(key, ciphertext, data)`, where `key` is the symmetric key,`ciphertext` is the a ciphertext to be decrypted, and `data` is OPTIONAL associated data, and outputs a plaintext.
+ - [A HMAC-based key derivation function](https://datatracker.ietf.org/doc/html/rfc5869) that is parameterized by `Hash` and consists of:
+    - A key derivation function `HKDF` that takes a tuple `(salt, input_key, context, len)`, where `salt` is an optional, non-secret random value, `input_key` is the input key material, `context` is an optional context and application-specific information, and `len` is the length of the output keying material in bytes.
 
-TODO: Add dependency information for the above.
 
 ## Expected Outcomes
 A working command-line demo with cryptography for handling arbitrary secrets. 

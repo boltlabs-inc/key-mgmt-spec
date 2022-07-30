@@ -26,10 +26,9 @@ An asset owner that has not previously interacted with the key server MUST regis
 1. The client and server close the session upon completion of the request.
 
 ## Generate and Store a Secret
-- [TODO](https://github.com/boltlabs-inc/key-mgmt-spec/issues/43): Determine failure and retry behavior for this protocol: what is the client behavior after receipt of ACK?
+- [TODO #43](https://github.com/boltlabs-inc/key-mgmt-spec/issues/43): Determine failure and retry behavior for this protocol: what is the client behavior after receipt of ACK?
 
-This client-initiated functionality generates a secret locally and stores the result both locally and remotely:
->>>>>>> f5e927a (Add retrieve details #12)
+This client-initiated functionality generates a secret locally and stores the result both locally and remotely.
 
 Input:
 - `user_id`, a 128-bit globally unique identifier (GUID) representing the identity of the asset owner.
@@ -108,7 +107,6 @@ See [the current development phase](current-development-phase.md#cryptographic-p
 - [A HMAC-based key derivation function](https://datatracker.ietf.org/doc/html/rfc5869) that is parameterized by `Hash` and consists of:
     - A key derivation function `HKDF` that takes a tuple `(salt, input_key, context, len)`, where `salt` is an optional, non-secret random value, `input_key` is the input key material, `context` is an optional context and application-specific information, and `len` is the length of the output keying material in bytes.
 
-
 Inter-dependency constraints include:
 - The length of the a key for `Enc` must be no more than 255 times the length of the output of `Hash`.
 
@@ -161,10 +159,10 @@ Usage guidance: Code that calls the `retrieve_storage_key` functionality SHOULD 
 ### Client-side storage
 
 For now, simple clear-text storage is acceptable.
-- [TODO](https://github.com/boltlabs-inc/key-mgmt-spec/issues/39) Include appropriate requirements for client-side secure storage and generate relevant issues in key-mgmt.
+- [TODO #39](https://github.com/boltlabs-inc/key-mgmt-spec/issues/39) Include appropriate requirements for client-side secure storage and generate relevant issues in key-mgmt.
 
 ### Server-side storage
-- [TODO](https://github.com/boltlabs-inc/key-mgmt-spec/issues/28). Include appropriate requirements for server-side secure storage and generate relevant issues in key-mgmt.
+- [TODO #28](https://github.com/boltlabs-inc/key-mgmt-spec/issues/28). Include appropriate requirements for server-side secure storage and generate relevant issues in key-mgmt.
 
 
 
