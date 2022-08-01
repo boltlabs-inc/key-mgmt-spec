@@ -15,7 +15,7 @@ An asset owner that has not previously interacted with the key server MUST regis
         - The `storage key` MUST NOT be saved, stored, or used in any context outside this protocol. It must not be passed to the calling application.
     1. Computes a ciphertext `encrypted_storage_key = Enc(master_key, storage_key, user_id||"storage key"|context)`.
     1. <a name="complete-registration"></a> Sends a request message to the key server over the registration session's secure channel. This message MUST indicate the desire to _complete registration_ and contain `user_id` and the ciphertext `encrypted_storage_key`.
-    1. Deletes `storage_key` from memory.
+    1. Deletes `storage_key` and `master_key` from memory.
         - [TODO #51](https://github.com/boltlabs-inc/key-mgmt-spec/issues/51): Update this when additional requests are allowed.
 1. The server:
     1. Checks that `user_id` matches that of the authenticated user in the open registration session. If this check fails, the server MUST abort.
@@ -149,7 +149,9 @@ Protocol:
     1. Derives `master_key`, a symmetric key of length `len` bytes for [`Enc`](#external-dependencies), from `export_key`, as follows:
         1. Length `len` should be the default for `Enc`.
         1. Set `master_key = HKDF(export_key, "OPAQUE-derived Lock Keeper master key")`.
-    1. Computes `storage_key = Dec(master_key, ciphertext, user_id||"storage key")`, where `ciphertext` is the received ciphertext from the key server, and outputs `storage_key`.
+    1. Computes `storage_key = Dec(master_key, ciphertext, user_id||"storage key")`, where `ciphertext` is the received ciphertext from the key server.
+    1. Deletes `master_key` from memory.
+    1. Outputs `storage_key`.
 
 Usage guidance: Code that calls the `retrieve_storage_key` functionality SHOULD NOT write the output `storage_key` to disk and should make a best effort to drop this key from temporary memory after use of this key is completed.
 
