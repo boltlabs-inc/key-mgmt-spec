@@ -1,5 +1,6 @@
 
-# Operations on Arbitrary Secrets
+# System Functionalities
+Lock Keeper system functionalities are comprised of the following:
 
 ## Register
 An asset owner that has not previously interacted with the key server MUST register. Registration proceeds as follows:
@@ -23,7 +24,8 @@ An asset owner that has not previously interacted with the key server MUST regis
     1. [Stores](#server-side-storage) the received ciphertext in a record associated with `user_id`.
 1. The client and server close the session upon completion of the request.
 
-## Generate and Store a Secret
+## Operations on Arbitrary Secrets
+### Generate and Store a Secret
 - [TODO #43](https://github.com/boltlabs-inc/key-mgmt-spec/issues/43): Determine failure and retry behavior for this protocol: what is the client behavior after receipt of ACK?
 
 This client-initiated functionality generates a secret locally and stores the result both locally and remotely.
@@ -57,7 +59,7 @@ Protocol:
 1. The client closes the session.
 
 
-## Retrieve a Secret
+### Retrieve a Secret
 This client-initiated functionality retrieves a secret from the system.
 
 Input:
@@ -93,8 +95,8 @@ Protocol:
 Usage guidance: The calling application SHOULD enable the asset owner to copy-paste the password to the system clipboard for one-time use and then makes a best effort to delete this secret from memory.
   
 
-## Cryptographic and Supporting Operations
-### External dependencies
+### Cryptographic and Supporting Operations
+#### External dependencies
 See [the current development phase](current-development-phase.md#cryptographic-protocol-and-implementation-dependencies) for our selections. Dependencies include:
 
 - Cryptographic Hash Function `Hash`. 
@@ -127,7 +129,7 @@ Protocol:
 Usage guidance:
 Code that consumes an `arbitrary_key` SHOULD include validation checks specific to the context before use, i.e., an `arbitrary_key` SHOULD be used only in the context for which it was initially generated.
 
-### `retrieve_storage_key` functionality
+#### `retrieve_storage_key` functionality
 This functionality allows the client to request and receive the key `storage_key` from the key server, where `storage_key` is a symmetric key for the implementation's selected AEAD used for remote storage.
 
 Inputs:
@@ -155,12 +157,12 @@ Protocol:
 
 Usage guidance: Code that calls the `retrieve_storage_key` functionality SHOULD NOT write the output `storage_key` to disk and should make a best effort to drop this key from temporary memory after use of this key is completed.
 
-### Client-side storage
+#### Client-side storage
 
 For now, simple clear-text storage is acceptable.
 - [TODO #39](https://github.com/boltlabs-inc/key-mgmt-spec/issues/39): Include appropriate requirements for client-side secure storage and generate relevant issues in key-mgmt.
 
-### Server-side storage
+#### Server-side storage
 - [TODO #28](https://github.com/boltlabs-inc/key-mgmt-spec/issues/28). Include appropriate requirements for server-side secure storage and generate relevant issues in key-mgmt.
 
 
