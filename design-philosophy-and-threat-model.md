@@ -22,7 +22,7 @@ An informal and non-exhaustive list:
     - Keep components modular so that we can serve different types of community members and service providers with different constraints/end goals. (e.g., Do not preclude asset owner from running their own server; allow asset owners to choose from a menu of custodial options; allow service providers to choose from a menu of deployment options)
 - Deployment flexibility:
     - Support on-premises HSMs and in-cloud servers
-    - Allow use of external cloud infrastructure while minimizing trust required by using secure processors and/or secure hardware.
+    - Allow use of external cloud infrastructure while minimizing trust required by using secure processors and/or secure hardware
     - Allow distribution of trust by using multiple geographic/legal jurisdictions and/or external cloud/service providers
 
 ## Threat Model and Mitigations
