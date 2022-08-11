@@ -14,7 +14,7 @@ An informal and non-exhaustive list:
 - Acknowledgment of human fallibility, importance of usability
 - Trust-but-verify, open source, abort & identify malicious behavior
 - Consideration of challenges to security posed by integration with the service provider’s asset management product: 
-    - Our software should be conducive to integration in a way that protects against threats not in our immediate scope; 
+    - Our software should be conducive to integration in a way that protects against threats not in our immediate scope 
     - The importance of providing clear, actionable guidance for organizational partners
 - Extensibility, modularity 
     - Including allowing for transition to more robust threat models, e.g., fault-tolerant Byzantine servers
