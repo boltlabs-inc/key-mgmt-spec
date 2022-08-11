@@ -57,7 +57,7 @@ We do not attempt to capture granular, non-cryptographic implementation and soft
 [Stakeholders and System Goals](stakeholders-and-goals.md)<br>
 [Current Development Phase](current-development-phase.md) <br>
 [System Architecture](systems-architecture.md)<br>
-[System Functionality](cryptographic-flows.md)<br>
+[System Functionality](cryptographic_flows.md)<br>
 [Where to Find Code](repository-list.md)<br>
 [Glossary](glossary.md)
 
