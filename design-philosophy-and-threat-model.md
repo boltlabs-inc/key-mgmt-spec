@@ -70,7 +70,7 @@ Malware and device compromise is a consideration of Lock Keeper, particularly wi
     1. The asset owner must authenticate in order to recover, use, or otherwise interact with their key. Care must be taken that the authentication mechanism is robust against impersonation attacks, e.g., by use of threshold cryptography/MPC solutions and/or a distributed PAKE.
 1. The developers integrating Lock Keeper should receive integration guidance on how to avoid decisions that undermine key or user data confidentiality.
 
-Humans with whom the digital asset owner interacts physically, e.g., family members, housemates, friends, and coffee shop dwellers, or virtually. Specifically, the software integrating Lock Keeper should include mitigations for the following types of threats:
+ The software integrating Lock Keeper should include mitigations against humans with whom the digital asset owner interacts physically, e.g., family members, housemates, friends, and coffee shop dwellers, or virtually. Specifically, it should consider the following types of threats:
 1. Physical threats to confidentiality, e.g., for shoulder-surfing attacks, be mindful of the community member’s context when asking for the input of sensitive information. Consider additional strategies, such as provision of educational materials to individual community members, and use of concrete, actionable advice and nudges for how to handle sensitive system information.
 1. Social engineering attacks: Avoid any scenario in which the asset owner is expected to send their key material to another party. Consider additional strategies, such as provision of educational materials to individual community members.
 
