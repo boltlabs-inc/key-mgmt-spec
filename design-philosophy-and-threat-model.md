@@ -6,10 +6,10 @@
 An informal and non-exhaustive list:
 
 - [Zero Trust](https://csrc.nist.gov/publications/detail/sp/800-207/final).
-    - defense in depth, 
-    - graceful failures, 
-    - distribution of trust, no single point of failure, 
-    - least privilege, 
+    - defense in depth 
+    - graceful failures 
+    - distribution of trust, no single point of failure 
+    - least privilege 
     - minimize attack surface
 - Acknowledgment of human fallibility, importance of usability
 - Trust-but-verify, open source, abort & identify malicious behavior
