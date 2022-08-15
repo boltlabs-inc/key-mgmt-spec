@@ -45,13 +45,13 @@ We assume a Public Key Infrastructure (PKI). For all session types, the local cl
     1. The client receives as output two values, an `export_key` (matching that from the registration phase) and a `session_key` (which is the output of an authenticated key exchange).
     1. The server receives as output a `session_key` matching that of the client.
     1. Both client and server MUST receive confirmation of the success of the AKE.
-1. The client and server open an encrypted channel secured under a key derived from `session_key`. 
-    - [TODO #29](https://github.com/boltlabs-inc/key-mgmt-spec/issues/29): Include additional details here.
-    - Note: This key should be used as a key for the AEAD scheme `Enc`. In the following, when the client and key server send each other messages, it is assumed that these messages are encrypted using `Enc` under `session_key`. The key server should additionally reject all messages sent over this channel that fail verification checks on the received ciphertexts.
+1. The client and server open an authenticated channel secured under a key derived from `session_key`. 
+    - [TODO #149](https://github.com/boltlabs-inc/key-mgmt/issues/149): Include additional details here once the implementation from #149 is complete.
+    - Implementation Note: This key is deterministically derived from `session_key` and should be used as a key for a message authentication code scheme `MAC`. In the following, when the client and key server send each other messages, it is assumed that these messages are authenticated under this MAC/key pair. The key server should additionally reject all messages sent over this channel that fail verification checks on the received ciphertexts. The implementor should be careful to use constant-time verification of the authentication tags.
 1. At this point, the registration session is considered _open_. 
 1. We have the following requirements for using an open registration session:
-    1. All messages sent between the client and server MUST be over this encrypted channel, i.e., all messages should be encrypted under the given shared key. 
-    1. The key server MUST additionally reject all messages sent over this channel that fail the AEAD verification checks.
+    1. All messages sent between the client and server MUST be over this authenticated channel, i.e., all messages should include an authentication tag that is computed under the selected MAC scheme using the shared key. 
+    1. The key server MUST additionally reject all messages sent over this channel that fail the MAC verification checks.
     1. The only valid request for a registration is a request to [complete registration](cryptographic_flows.md#complete-registration).
     1. The key server MUST close the session after completion of the complete registration request.
         - [TODO #51](https://github.com/boltlabs-inc/key-mgmt-spec/issues/51): Set recommendations for sane request limits and timeouts.
@@ -63,13 +63,13 @@ We assume a Public Key Infrastructure (PKI). For all session types, the local cl
     1. The client receives as output two values, an `export_key` (matching that from the registration phase) and a `session_key` (which is the output of an authenticated key exchange).
     1. The server receives as output a `session_key` matching that of the client.
     1. Both client and server MUST receive confirmation of the success of the AKE.
-1. The client and server open an encrypted channel secured under a key derived from `session_key`. 
-    - [TODO #29](https://github.com/boltlabs-inc/key-mgmt-spec/issues/29): Include additional details here.
-    - Note: This key should be used as a key for the AEAD scheme `Enc`. In the following, when the client and key server send each other messages, it is assumed that these messages are encrypted using `Enc` under `session_key`. The key server should additionally reject all messages sent over this channel that fail verification checks on the received ciphertexts.
+1. The client and server open an authenticated channel secured under a key derived from `session_key`. 
+    [TODO #149](https://github.com/boltlabs-inc/key-mgmt/issues/149): Include additional details here once the implementation from #149 is complete.
+    - Implementation Note: This deterministically-derived key should be used as a key for a message authentication code scheme `MAC`. In the following, when the client and key server send each other messages, it is assumed that these messages are authenticated under this MAC/key pair. The key server should additionally reject all messages sent over this channel that fail verification checks on the received ciphertexts. The implementor should be careful to use constant-time verification of the authentication tags.
 1. At this point, the request session is consider _open_. All additional messages sent between the client and server MUST be over this encrypted channel.
 1. We have the following requirements for using an open request session:
-    1. All messages sent between the client and server MUST be over this encrypted channel, i.e., all messages should be encrypted under the given shared key. 
-    1. The key server MUST additionally reject all messages sent over this channel that fail the AEAD verification checks.
+    1. All messages sent between the client and server MUST be over this authenticated channel, i.e., all messages should include an authentication tag that is computed under the selected MAC scheme using the shared key. 
+    1. The key server MUST additionally reject all messages sent over this channel that fail the MAC verification checks.
     1. The client may then send a single request (i.e., one of store, retrieve, audit, import, export) to the key server during this session.
     1. The key server MUST close the session upon completion of the given request.
         - [TODO #51](https://github.com/boltlabs-inc/key-mgmt-spec/issues/51): Set recommendations for sane request limits and timeouts.
