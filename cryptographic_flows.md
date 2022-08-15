@@ -34,7 +34,7 @@ Input:
 - `user_id`, a 128-bit globally unique identifier (GUID) representing the identity of the asset owner.
 
 Output:
-- `key_id`, a 128-bit unique identifier representing a key, computed as the (possibly truncated) output of `Hash` over user and scheme parameters and a randomly generated salt.
+- `key_id`, a 128-bit unique identifier representing a secret, computed as the (possibly truncated) output of `Hash` over user and scheme parameters and a randomly generated salt.
 
 Protocol:
 1. The client:
@@ -56,18 +56,21 @@ Protocol:
     1. Runs a validity check on the received ciphertext (i.e., the ciphertext must be of the expected format and length).
     1. [Stores](#server-side-storage) a tuple containing the received ciphertext, `user_id`, and `key_id` in the server database.
     1. Sends an ACK to the client.
-1. The client closes the session.
+1. The client:
+    1. Closes the session.
+    1. Outputs `key_id` to the calling application.
 
 
-### Retrieve a Secret
-This client-initiated functionality retrieves a secret from the system.
+### Retrieve a Secret 
+This client-initiated functionality retrieves a secret from the system and passes use-specific information to the calling application.
 
 Input:
 - `user_id`, a 128-bit globally unique identifier (GUID) representing the identity of the asset owner.
-- `key_id`, a 128-bit unique identifier representing a key.
+- `key_id`, a 128-bit unique identifier representing a secret.
+- `context`, one of `NULL`, `"local only"`, or `"export"`, which should indicate the asset owner's intended use of the secret.
 
 Output:
-- `arbitrary_key`, the arbitrary secret that is backed up remotely.
+- Either a success indicator OR `arbitrary_key`, the arbitrary secret that is backed up remotely.
 
 Protocol:
 1. The client:
@@ -84,15 +87,26 @@ Protocol:
         1. The request must conform to the expected format and content, 
         1. The `user_id` must be of the expected format and length, and should match that of the open request session,
         1. The `key_id` must be associated with the given `user_id` in the key server's database.
+        1. The intended use must match one of the expected options.
     1. [Retrieves](#server-side-storage) the associated ciphertext and associated data for the given pair `(user_id, key_id)` from its database and sends this ciphertext, together with the associated data, to the client.
+        - [TODO #36](https://github.com/boltlabs-inc/key-mgmt-spec/issues/36): The key server should log the intended use of this retrieval request.
 1. The client:
     1. Computes `arbitrary_key = Dec(storage_key, ciphertext, user_id||"storage key")`, where `ciphertext` is the received ciphertext from the key server.
     1. Deletes `storage_key` from memory.
     1. Closes the open request session.
     1. [Stores](#client-side-storage) `ciphertext` in its local storage.
-    1. Outputs `arbitrary_key`.
+    1. If `context` is set to `NULL`, outputs a success indicator and halts.
+    1. Otherwise, 
+        1. If `context` is set to `"local only"`, outputs `arbitrary_key` to the calling application.
+        1. If `context` is set to `"export"`, the client computes `exported key` as `len || secret`, as described above, and outputs `exported_key` to the calling application.
 
-Usage guidance: The calling application SHOULD enable the asset owner to copy-paste the password to the system clipboard for one-time use and then makes a best effort to delete this secret from memory.
+Usage guidance: The calling application SHOULD support the intended use of the asset owner in as security conscious manner as possible. That is:
+- If the `context` is set to `"local only"`, the calling application SHOULD enable the asset owner to copy-paste the password to the system clipboard for one-time use and then makes a best effort to delete this secret from memory.
+- If the `context` is set to `"export"`, the calling application SHOULD make a best effort to delete the exported secret from memory.
+
+Non-normative notes: 
+- The context `context` is meant to allow the asset owner the ability to store state at the server as to the intended use of their secret and does NOT provide assurance that the intended use was respected. The calling application SHOULD make a best effort to support the intended use in as conservative a manner as possible.
+- The context `NULL` is for internal testing and system extensibility purposes and does not currently provide a function for the asset owner.
 
 ### Import a Secret
 
@@ -100,7 +114,7 @@ This functionality allows an asset owner to _import_ a secret to the system. The
 
 Input:
 - `user_id`, a 128-bit globally unique identifier (GUID) representing the identity of the asset owner.
-- `secret`, which MUST have the format ``len || secret_material``, where `len` is 1 byte that represents the length of the secret material `secret_material` in bytes.
+- `secret`, which is of the form ``len || secret_material``, where `len` is 1 byte that represents the length of the secret material `secret_material` in bytes.
 
 Output:
 - `key_id`, a 128-bit unique identifier representing a key, computed as the (possibly truncated) output of `Hash` over user and scheme parameters and a randomly generated salt.
@@ -125,10 +139,11 @@ Protocol:
     1. Runs a validity check on the received ciphertext (i.e., the ciphertext must be of the expected format and length).
     1. [Stores](#server-side-storage) a tuple containing the received ciphertext, `user_id`, `key_id`, and the additional context `"imported key"` in the server database.
     1. Sends an ACK to the client.
-1. The client closes the session.
+1. The client:
+    1. Closes the session.
+    1. Outputs `key_id` to the calling application.
 
 Non-normative note: The additional context `"imported key"` provides assurance and usage information for the asset owner and does not provide any additional assurance for the key server. That is, the asset owner, even after recovering from a lost device, is still able to retrieve and leverage this contextual information in deciding how to use the given secret.
-  
 
 ### Cryptographic and Supporting Operations
 #### External dependencies
