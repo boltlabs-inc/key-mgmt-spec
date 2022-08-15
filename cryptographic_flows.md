@@ -54,7 +54,7 @@ Protocol:
     1. [Stores](#store-a-secret-locally) the ciphertext and associated data locally.
 1. The key server:
     1. Runs a validity check on the received ciphertext (i.e., the ciphertext must be of the expected format and length).
-    1. [Stores](#server-side-storage) a tuple containing the received ciphertext and `user_id` in the server database.
+    1. [Stores](#server-side-storage) a tuple containing the received ciphertext, `user_id`, and `key_id` in the server database.
     1. Sends an ACK to the client.
 1. The client closes the session.
 
