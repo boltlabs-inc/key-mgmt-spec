@@ -73,6 +73,8 @@ We have the following dependencies:
     - A decryption function `Dec` that takes a pair `(key, ciphertext, data)`, where `key` is the symmetric key,`ciphertext` is the a ciphertext to be decrypted, and `data` is OPTIONAL associated data, and outputs a plaintext.
  - [A HMAC-based key derivation function](https://datatracker.ietf.org/doc/html/rfc5869) that is parameterized by `Hash` and consists of:
     - A key derivation function `HKDF` that takes a tuple `(salt, input_key, context, len)`, where `salt` is an optional, non-secret random value, `input_key` is the input key material, `context` is an optional context and application-specific information, and `len` is the length of the output keying material in bytes.
+- [A message authentication code (MAC)].
+    - [TODO #149]([TODO #149](https://github.com/boltlabs-inc/key-mgmt/issues/149): Propagate implementation decisions from #149 here.
 
 
 ## Expected Outcomes
