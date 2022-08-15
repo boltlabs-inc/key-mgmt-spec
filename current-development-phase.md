@@ -47,7 +47,7 @@ See the [Operations on Arbitrary Secrets page](cryptographic_flows.md#) for deta
     1. Any communication with the key server that occurs in serving an import request MUST occur via a mutually authenticated channel that satisfies confidentiality and integrity.
 1. The asset owner may _export_ the secret from the system. The export format for the key SHOULD allow for easy transfer of the key material to another digital asset management system, i.e., secrets should be portable.
     1. The default expected format is as bytes of the form ``len || secret``, where `len` is 1 byte that represents the length of the secret `secret` in bytes.
-    1. The implementation may define other acceptable import formats.
+    1. The implementation may define other acceptable export formats.
     1. Any communication with the key server that occurs in serving an export request MUST occur via a mutually authenticated channel that satisfies confidentiality and integrity. 
 1. The asset owner may _audit_ the operations performed by the key server on a given secret. This allows the asset owner to retrieve a log of operations from the key server.
     1. Audit log retrieval MUST occur via a mutually authenticated channel that satisfies confidentiality and integrity.
