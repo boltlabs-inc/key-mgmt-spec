@@ -22,7 +22,35 @@ An asset owner that has not previously interacted with the key server MUST regis
     1. Checks that `user_id` matches that of the authenticated user in the open registration session. If this check fails, the server MUST abort.
     1. Checks that the received ciphertext is of the expected format and length.
     1. [Stores](#server-side-storage) the received ciphertext in a record associated with `user_id`.
+    1. Stores the registration registration request in the [audit log](#audit-logs).
 1. The client and server close the session upon completion of the request.
+
+## Retrieve Audit Logs
+The asset owner can request audit logs from the key server.
+
+Input:
+- `user_id`, a 128-bit globally unique identifier (GUID) representing the identity of the asset owner.
+- `type`, one of:
+    - `"system only"`, which indicates the asset owner wants a record of registration and login actions;
+    - `"key only"`, which indicates the asset owner wants a record of requested key use operations with respect to or more keys; or
+    - `"all"`, which indicates the asset owner wants both system and requested key use operations.
+- `key_identifiers`, an OPTIONAL list of key identifiers.
+
+Output: `summary_record`, which contains the requested history, including timestamps.
+
+Protocol:
+
+1. The client:
+   1. [Opens a request session](systems-architecture.md#request-session) for the given user id `user_id`. 
+   1. Sends a request message to the key server over the session's secure channel. This message MUST indicate the desire to retrieve audit logs, specify the type of audit requested (i.e., `"system only"`, `"key only"`, or `"all"`) and contain `user_id`.
+1. The key server:
+   1. Runs a validity check on the received request and `user_id`(i.e., there must be a valid open request session, the request must conform to the expected format, and `user_id` must be of the expected format and length, and should match that of the open request session). If this check fails, the server MUST reject the request.
+   1. Retrieves all log records relevant to the client's request, summarises these records in `summary_record`, and sends `summary_record` to the client over the secure channel.
+   1. Stores the current request information, including the outcome of the validity check, in an [audit log](#audit-logs) associated with the given user.    
+ 1. The client:
+    1. Closes the session.
+    1. Outputs `summary_record` to the calling application.
+
 
 ## Operations on Arbitrary Secrets
 ### Generate and Store a Secret
@@ -52,6 +80,7 @@ Protocol:
 1. The key server:
     1. Runs a validity check on the received ciphertext (i.e., the ciphertext must be of the expected format and length).
     1. [Stores](#server-side-storage) a tuple containing the received ciphertext, `user_id`, and `key_id` in the server database.
+    1. Stores the current request information, including the outcome of the validity check, in an [audit log](#audit-logs) associated with the given user.    
     1. Sends an ACK to the client.
 1. The client:
     1. Closes the session.
@@ -81,8 +110,7 @@ Protocol:
         1. Otherwise, continues.
    1. Sends a request message to the key server over the open session's secure channel. This message MUST indicate the desire to retrieve the backed up secret and contain `user_id` and `key_id`.
 1. The key server:
-    1. Runs a validity check on the received request, `user_id`, and `key_id`.
-       If this check fails, the server MUST reject the request:
+    1. Runs a validity check on the received request, `user_id`, and `key_id`. If this check fails, the server MUST reject the request. The validation check includes the following:       
         1. There must be a valid open request session, 
         1. The request must conform to the expected format and content, 
         1. The `user_id` must be of the expected format and length, and should match that of the open request session,
@@ -90,6 +118,7 @@ Protocol:
         1. The intended use must match one of the expected options.
     1. [Retrieves](#server-side-storage) the associated ciphertext, `ciphertext` and associated data, `associated_data`, for the given pair `(user_id, key_id)` from its database and sends this ciphertext, together with the associated data, to the client.
         - [TODO #36](https://github.com/boltlabs-inc/key-mgmt-spec/issues/36): The key server should log the intended use of this retrieval request.
+    1. Stores the current request information, including the outcome of the validity check, in an [audit log](#audit-logs) associated with the given user.  
 1. The client:
     1. Computes `arbitrary_key = Dec(storage_key, ciphertext, associated_data)`, where `ciphertext` is the received ciphertext from the key server and `associated_data` is the associated data received from the server.
     1. Deletes `storage_key` from memory.
@@ -136,6 +165,7 @@ Protocol:
 1. The key server:
     1. Runs a validity check on the received ciphertext (i.e., the ciphertext must be of the expected format and length).
     1. [Stores](#server-side-storage) a tuple containing the received ciphertext, and the associated data `user_id||key_id||"imported key"`in the server database.
+    1. Stores the current request information, including the outcome of the validity check, in an [audit log](#audit-logs) associated with the given user.    
     1. Sends an ACK to the client.
 1. The client:
     1. Closes the session.
@@ -220,6 +250,8 @@ For now, simple clear-text storage is acceptable.
 
 #### Server-side storage
 - [TODO #28](https://github.com/boltlabs-inc/key-mgmt-spec/issues/28). Include appropriate requirements for server-side secure storage and generate relevant issues in key-mgmt.
+##### Audit Logs
+The server storage should include a per-user audit log that tracks system registration and logins, as well as key use requests.
 
 
 
