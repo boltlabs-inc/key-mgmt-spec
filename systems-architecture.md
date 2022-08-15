@@ -63,8 +63,9 @@ We assume a Public Key Infrastructure (PKI). For all session types, the local cl
     1. The client receives as output two values, an `export_key` (matching that from the registration phase) and a `session_key` (which is the output of an authenticated key exchange).
     1. The server receives as output a `session_key` matching that of the client.
     1. Both client and server MUST receive confirmation of the success of the AKE.
+    1. The server stores the authentication attempt, including the outcome, in an [audit log](cryptographic_flows.md#audit-logs) associated with the given user. 
 1. The client and server open an authenticated channel secured under a key derived from `session_key`. 
-    [TODO #149](https://github.com/boltlabs-inc/key-mgmt/issues/149): Include additional details here once the implementation from #149 is complete.
+    - [TODO #149](https://github.com/boltlabs-inc/key-mgmt/issues/149): Include additional details here once the implementation from #149 is complete.
     - Implementation Note: This deterministically-derived key should be used as a key for a message authentication code scheme `MAC`. In the following, when the client and key server send each other messages, it is assumed that these messages are authenticated under this MAC/key pair. The key server should additionally reject all messages sent over this channel that fail verification checks on the received ciphertexts. The implementor should be careful to use constant-time verification of the authentication tags.
 1. At this point, the request session is consider _open_. All additional messages sent between the client and server MUST be over this encrypted channel.
 1. We have the following requirements for using an open request session:
