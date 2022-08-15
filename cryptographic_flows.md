@@ -93,6 +93,41 @@ Protocol:
     1. Outputs `arbitrary_key`.
 
 Usage guidance: The calling application SHOULD enable the asset owner to copy-paste the password to the system clipboard for one-time use and then makes a best effort to delete this secret from memory.
+
+### Import a Secret
+
+This functionality allows an asset owner to _import_ a secret to the system. The imported secret is stored both locally and remotely at the key server.
+
+Input:
+- `user_id`, a 128-bit globally unique identifier (GUID) representing the identity of the asset owner.
+- `secret`, which MUST have the format ``len || secret_material``, where `len` is 1 byte that represents the length of the secret material `secret_material` in bytes.
+
+Output:
+- `key_id`, a 128-bit unique identifier representing a key, computed as the (possibly truncated) output of `Hash` over user and scheme parameters and a randomly generated salt.
+
+Protocol:
+1. The client:
+   1. [Opens a request session](systems-architecture.md#request-session) for the given user id `user_id`. 
+   1. Calls [`retrieve_storage_key`](#retrievestoragekey-functionality), the output of which is `storage_key`.
+   1. Sends a request message to the key server over the session's secure channel. This message MUST indicate the desire to store an imported secret remotely and contain `user_id`.
+1. The key server:
+   1. Runs a validity check on the received request and `user_id`(i.e., there must be a valid open request session, the request must conform to the expected format, and `user_id` must be of the expected format and length, and should match that of the open request session). If this check fails, the server MUST reject the request.
+   1. Generates `key_id`, a globally unique identifier as follows:
+        1. Generates `randomness` as 32 bytes of randomness output from `rng`.
+        1. Computes `key_id` as `Hash(domain_sep, 16, user_id, 32, randomness)`, truncated to 128-bits if necessary, where `domain_sep` is a static string acting as a domain separator, prepended with its length in bytes.
+        1. This functionality should fail (with negligible probability) if the generated identifier is not unique among the key server's stored identifiers. 
+        1. Sends `key_id` to the client over the secure channel.
+1. The client:
+    1. Computes the secret `imported_key` as .
+    1. Computes `Enc(storage_key, imported_key, user_id||key_id||"imported key")` and sends the resulting ciphertext to the key server over the secure channel.
+    1. [Stores](#store-a-secret-locally) the ciphertext and associated data locally.
+1. The key server:
+    1. Runs a validity check on the received ciphertext (i.e., the ciphertext must be of the expected format and length).
+    1. [Stores](#server-side-storage) a tuple containing the received ciphertext, `user_id`, `key_id`, and the additional context `"imported key"` in the server database.
+    1. Sends an ACK to the client.
+1. The client closes the session.
+
+Non-normative note: The additional context `"imported key"` provides assurance and usage information for the asset owner and does not provide any additional assurance for the key server. That is, the asset owner, even after recovering from a lost device, is still able to retrieve and leverage this contextual information in deciding how to use the given secret.
   
 
 ### Cryptographic and Supporting Operations
