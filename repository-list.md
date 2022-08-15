@@ -3,7 +3,7 @@
 ## Lock Keeper Libraries
 Our libraries exist in the [`key-mgmt`](https://github.com/boltlabs-inc/key-mgmt) repository.
 - [`local-client`](https://github.com/boltlabs-inc/key-mgmt/tree/develop/dams-local-client): This is a Rust library that can be integrated into a human-facing calling application that runs on an asset owner's device. All operations on the key server are initiated by this client. See [here](systems-architecture.md#local_client) for more details.
-- [`key-server`](https://github.com/boltlabs-inc/key-mgmt/tree/develop/dams-key-server): This library can be integrated into a host server in order to provide end-to-end encrypted storage of secrets. See [here](systems-architecture.md#key_server) for more details.
+- [`key-server`](https://github.com/boltlabs-inc/key-mgmt/tree/develop/dams-key-server): This binary can be integrated into a host server in order to provide end-to-end encrypted storage of secrets. See [here](systems-architecture.md#key_server) for more details.
 
 ## Demo Repository
 A [repository]() that demonstrates usage of the `local-client` and `key-server` libraries.<br>

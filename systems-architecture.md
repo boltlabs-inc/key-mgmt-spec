@@ -9,7 +9,7 @@ The client functionality is split between a library and a demo repository that s
 In practice, the Service Provider may choose to directly integrate the library component into a mobile application or as hardened WASM into a browser-based service. 
 
 ### Key server
-The library component is integrated into a host server and interfaces with the client component.
+The binary is integrated into a host server and interfaces with the client component.
 
 This component is responsible for encrypted storage of secrets on behalf of the asset owner. That is, the key server performs operations on secrets as requested by the asset owner. See [the asset owner workflows](current-development-phase.md#workflows) for more information on the allowed operations. 
 
