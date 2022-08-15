@@ -14,6 +14,8 @@
 
 **Endpoint**: A gRPC method that establishes a session and determines which protocol or workflow will be executed within that session.
 
+**gRPC**: A Remote Procedure Call (RPC) framework developed by Google.
+
 **Key fiduciary**: An entity to whom the asset owner has granted key use authority.
 
 **Key server**: A server that enables both secure storage and use of secrets.
