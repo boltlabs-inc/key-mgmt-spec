@@ -26,4 +26,4 @@
 
 **Session**: An open channel of communication between a client and a server. Used to facilitate the execution of protocols or workflows.
 
-**Workflow/Flow**: A set of potentially non-linear steps that accomplish an action on behalf of a user. Completing a workflow requires the execution of one or more protocols. *Example: Generate and store a secret*
+**Workflow/Flow**: A set of steps that accomplish an action on behalf of a user. Completing a workflow requires the execution of one or more protocols. *Example: Generate and store a secret*
