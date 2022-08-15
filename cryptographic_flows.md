@@ -14,7 +14,7 @@ An asset owner that has not previously interacted with the key server MUST regis
         1. Set `master_key = HKDF(export_key, "OPAQUE-derived Lock Keeper master key")`.
     1. Runs the [generate protocol](cryptographic_flows.md#generate-a-secret) to get a symmetric key `storage_key` for [`Enc`](#external-dependencies) of length 32 bytes.
         - The `storage key` MUST NOT be saved, stored, or used in any context outside this protocol. It must not be passed to the calling application.
-    1. Computes a ciphertext `encrypted_storage_key = Enc(master_key, storage_key, user_id|"storage key")`.
+    1. Computes a ciphertext `encrypted_storage_key = Enc(master_key, storage_key, user_id||"storage key")`.
     1. <a name="complete-registration"></a> Sends a request message to the key server over the registration session's secure channel. This message MUST indicate the desire to _complete registration_ and contain `user_id` and the ciphertext `encrypted_storage_key`.
     1. Deletes `storage_key` and `master_key` from memory.
         - [TODO #51](https://github.com/boltlabs-inc/key-mgmt-spec/issues/51): Update this when additional requests are allowed.
