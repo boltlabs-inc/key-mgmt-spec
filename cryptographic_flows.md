@@ -67,7 +67,10 @@ This client-initiated functionality retrieves a secret from the system and passe
 Input:
 - `user_id`, a 128-bit globally unique identifier (GUID) representing the identity of the asset owner.
 - `key_id`, a 128-bit unique identifier representing a secret.
-- `context`, one of `NULL`, `"local only"`, or `"export"`, which should indicate the asset owner's intended use of the secret.
+- `context`, one of `NULL`, `"local only"`, or `"export"`, which should indicate the asset owner's intended use of the secret:
+    - `NULL`: This option captures internal use of this workflow, i.e., there is no specific asset owner intent specified.
+    - `"local only"`: This option captures immediate uses of the secret that are either local to the calling application or the asset owner's system. 
+    - `"export"`: This option captures other, potentially non-local uses of the secret, i.e., the value is expected to be passed and persist outside of the calling application.
 
 Output:
 - Either a success indicator OR `arbitrary_key`, the arbitrary secret that is backed up remotely.
@@ -105,8 +108,10 @@ Usage guidance: The calling application SHOULD support the intended use of the a
 - If the `context` is set to `"export"`, the calling application SHOULD make a best effort to delete the exported secret from memory.
 
 Non-normative notes: 
-- The context `context` is meant to allow the asset owner the ability to store state at the server as to the intended use of their secret and does NOT provide assurance that the intended use was respected. The calling application SHOULD make a best effort to support the intended use in as conservative a manner as possible.
-- The context `NULL` is for internal testing and system extensibility purposes and does not currently provide a function for the asset owner.
+- The context `context` is meant to allow the asset owner the ability to store state at the server as to the intended use of their secret and does NOT provide assurance that the intended use was respected. The calling application SHOULD make a best effort to support the intended use in as conservative a manner as possible:
+    - The context `"local only"` indicates that secret material is meant to be passed to the calling application, and possibly the asset owner's device system, and used in a limited fashion. The calling application SHOULD allow either no or very restricted use of this value outside of the calling application itself, e.g., passing the value in order to allow one-time use of the system clipboard is acceptable, but passing this material over a network connection is not.
+    - The context `"export"` indicates that the secret material is meant to be passed to and out of the calling application, and persist _outside of the calling application_ itself. This is meant to capture uses like the asset owner creating an external backup of the system or as part of removing the secret from the key server entirely.
+    - The context `NULL` is for internal testing and system extensibility purposes and does not currently provide a function for the asset owner.
 
 ### Import a Secret
 
