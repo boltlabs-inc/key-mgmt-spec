@@ -102,7 +102,7 @@ Protocol:
 
 Usage guidance: The calling application SHOULD support the intended use of the asset owner in as security conscious manner as possible. That is:
 - If the `context` is set to `"local only"`, the calling application SHOULD enable the asset owner to copy-paste the password to the system clipboard for one-time use and then makes a best effort to delete this secret from memory.
-- If the `context` is set to `"export"`, the calling application SHOULD make a best effort to delete the exported secret from memory.
+- If the `context` is set to `"export"`, the calling application SHOULD make a best effort to delete the exported secret from memory immediately after use, e.g., after passing the exported secret (or a value derived from this exported secret) out of the calling application itself.
 
 Non-normative notes: 
 - The context `context` is meant to allow the asset owner the ability to store state at the server as to the intended use of their secret and does NOT provide assurance that the intended use was respected. The calling application SHOULD make a best effort to support the intended use in as conservative a manner as possible:
@@ -116,7 +116,7 @@ This functionality allows an asset owner to _import_ a secret to the system. The
 
 Input:
 - `user_id`, a 128-bit globally unique identifier (GUID) representing the identity of the asset owner.
-- `secret`, which is of the form ``len || secret_material``, where `len` is 1 byte that represents the length of the secret material `secret_material` in bytes.
+- `secret`, the secret that is being imported, which is of the form ``len || secret_material``, where `len` is 1 byte that represents the length of the secret material `secret_material` in bytes.
 
 Output:
 - `key_id`, a 128-bit unique identifier representing a key, computed as the (possibly truncated) output of `Hash` over user and scheme parameters and a randomly generated salt.
@@ -127,12 +127,11 @@ Protocol:
    1. Calls [`retrieve_storage_key`](#retrievestoragekey-functionality), the output of which is `storage_key`.
    1. Sends a request message to the key server over the session's secure channel. This message MUST indicate the desire to store an imported secret remotely and contain `user_id`.
 1. The key server:
-   1. Runs a validity check on the received request and `user_id`(i.e., there must be a valid open request session, the request must conform to the expected format, and `user_id` must be of the expected format and length, and should match that of the open request session). If this check fails, the server MUST reject the request.
+   1. Runs a validity check on the received request and `user_id` (i.e., there must be a valid open request session, the request must conform to the expected format, and `user_id` must be of the expected format and length, and should match that of the open request session). If this check fails, the server MUST reject the request.
    1. Runs the [Generate a key identifier](#generate-a-key-identifier) subprotocol, the output of which is a globally unique identifier `key_id`. 
    1. Sends `key_id` to the client over the secure channel.
 1. The client:
-    1. Computes the secret `imported_key` as .
-    1. Computes `Enc(storage_key, imported_key, user_id||key_id||"imported key")` and sends the resulting ciphertext to the key server over the secure channel.
+    1. Computes `Enc(storage_key, secret, user_id||key_id||"imported key")` and sends the resulting ciphertext to the key server over the secure channel.
     1. [Stores](#store-a-secret-locally) the ciphertext and associated data locally.
 1. The key server:
     1. Runs a validity check on the received ciphertext (i.e., the ciphertext must be of the expected format and length).
