@@ -88,10 +88,10 @@ Protocol:
         1. The `user_id` must be of the expected format and length, and should match that of the open request session,
         1. The `key_id` must be associated with the given `user_id` in the key server's database.
         1. The intended use must match one of the expected options.
-    1. [Retrieves](#server-side-storage) the associated ciphertext and associated data for the given pair `(user_id, key_id)` from its database and sends this ciphertext, together with the associated data, to the client.
+    1. [Retrieves](#server-side-storage) the associated ciphertext, `ciphertext` and associated data, `associated_data`, for the given pair `(user_id, key_id)` from its database and sends this ciphertext, together with the associated data, to the client.
         - [TODO #36](https://github.com/boltlabs-inc/key-mgmt-spec/issues/36): The key server should log the intended use of this retrieval request.
 1. The client:
-    1. Computes `arbitrary_key = Dec(storage_key, ciphertext, user_id||"storage key")`, where `ciphertext` is the received ciphertext from the key server.
+    1. Computes `arbitrary_key = Dec(storage_key, ciphertext, user_id||associated_data)`, where `ciphertext` is the received ciphertext from the key server and `associated_data` is the associated data received from the server.
     1. Deletes `storage_key` from memory.
     1. Closes the open request session.
     1. [Stores](#client-side-storage) `ciphertext` in its local storage.
