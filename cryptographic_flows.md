@@ -31,10 +31,12 @@ The asset owner can request audit logs from the key server.
 Input:
 - `user_id`, a 128-bit globally unique identifier (GUID) representing the identity of the asset owner.
 - `type`, one of:
-    - `"system only"`, which indicates the asset owner wants a record of registration and login actions;
-    - `"key only"`, which indicates the asset owner wants a record of requested key use operations with respect to or more keys; or
+    - `"system only"`, which indicates the asset owner wants a record of registrations, logins, and audit log requests;
+    - `"key only"`, which indicates the asset owner wants a record of requested key use operations with respect to one or more keys; or
     - `"all"`, which indicates the asset owner wants both system and requested key use operations.
-- `key_identifiers`, an OPTIONAL list of key identifiers.
+- `key_identifiers`, an OPTIONAL list of key identifiers. If no key identifier is provided, both the `"all"` and `"key only"` options above will return logs for all keys.
+- `after_date`, an OPTIONAL date-time input to ask for logs after a certain date.
+- `before_date`, an OPTIONAL date-time input to ask for logs before a certain date. If both `after_date` and `before_date` are provided, logs from within that date range will be returned.
 
 Output: `summary_record`, which contains the requested history, including timestamps.
 
@@ -251,7 +253,7 @@ For now, simple clear-text storage is acceptable.
 #### Server-side storage
 - [TODO #28](https://github.com/boltlabs-inc/key-mgmt-spec/issues/28). Include appropriate requirements for server-side secure storage and generate relevant issues in key-mgmt.
 ##### Audit Logs
-The server storage should include a per-user audit log that tracks system registration and logins, as well as key use requests.
+The server storage should include a per-user audit log that tracks system registration and logins, key use requests, and audit log requests. A single log entry contains the following information about each action: action, actor, date, outcome (e.g. success or failure), any related key identifier.
 
 
 
