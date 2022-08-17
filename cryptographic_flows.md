@@ -48,7 +48,7 @@ Protocol:
 1. The client:
     1. Runs the [generate](#generate-a-secret) protocol on input `(32, rng, user_id||key_id)` to get a secret `arbitrary_key`.
     1. Computes `Enc(storage_key, arbitrary_key, user_id||key_id)` and sends the resulting ciphertext to the key server over the secure channel.
-    1. [Stores](#store-a-secret-locally) the ciphertext and associated data locally.
+    1. [Stores](#store-a-secret-locally) the ciphertext and associated data `user_id||key_id` locally.
 1. The key server:
     1. Runs a validity check on the received ciphertext (i.e., the ciphertext must be of the expected format and length).
     1. [Stores](#server-side-storage) a tuple containing the received ciphertext, `user_id`, and `key_id` in the server database.
@@ -91,7 +91,7 @@ Protocol:
     1. [Retrieves](#server-side-storage) the associated ciphertext, `ciphertext` and associated data, `associated_data`, for the given pair `(user_id, key_id)` from its database and sends this ciphertext, together with the associated data, to the client.
         - [TODO #36](https://github.com/boltlabs-inc/key-mgmt-spec/issues/36): The key server should log the intended use of this retrieval request.
 1. The client:
-    1. Computes `arbitrary_key = Dec(storage_key, ciphertext, user_id||associated_data)`, where `ciphertext` is the received ciphertext from the key server and `associated_data` is the associated data received from the server.
+    1. Computes `arbitrary_key = Dec(storage_key, ciphertext, associated_data)`, where `ciphertext` is the received ciphertext from the key server and `associated_data` is the associated data received from the server.
     1. Deletes `storage_key` from memory.
     1. Closes the open request session.
     1. [Stores](#client-side-storage) `ciphertext` in its local storage.
@@ -132,10 +132,10 @@ Protocol:
    1. Sends `key_id` to the client over the secure channel.
 1. The client:
     1. Computes `Enc(storage_key, secret, user_id||key_id||"imported key")` and sends the resulting ciphertext to the key server over the secure channel.
-    1. [Stores](#store-a-secret-locally) the ciphertext and associated data locally.
+    1. [Stores](#store-a-secret-locally) the ciphertext and associated data `user_id||key_id||"imported key"` locally.
 1. The key server:
     1. Runs a validity check on the received ciphertext (i.e., the ciphertext must be of the expected format and length).
-    1. [Stores](#server-side-storage) a tuple containing the received ciphertext, `user_id`, `key_id`, and the additional context `"imported key"` in the server database.
+    1. [Stores](#server-side-storage) a tuple containing the received ciphertext, and the associated data `user_id||key_id||"imported key"`in the server database.
     1. Sends an ACK to the client.
 1. The client:
     1. Closes the session.
