@@ -31,7 +31,7 @@ The asset owner can request audit logs from the key server.
 Input:
 - `user_id`, a 128-bit globally unique identifier (GUID) representing the identity of the asset owner.
 - `type`, one of:
-    - `"system only"`, which indicates the asset owner wants a record of registrations, logins, and audit log requests;
+    - `"system only"`, which indicates the asset owner wants a record of registration, logins, and audit log requests;
     - `"key only"`, which indicates the asset owner wants a record of requested key use operations with respect to one or more keys; or
     - `"all"`, which indicates the asset owner wants both system and requested key use operations.
 - `key_identifiers`, an OPTIONAL list of key identifiers. If no key identifier is provided, both the `"all"` and `"key only"` options above will return logs for all keys.
@@ -48,7 +48,7 @@ Protocol:
 1. The key server:
    1. Runs a validity check on the received request and `user_id`(i.e., there must be a valid open request session, the request must conform to the expected format, and `user_id` must be of the expected format and length, and should match that of the open request session). If this check fails, the server MUST reject the request.
    1. Retrieves all log records relevant to the client's request, summarises these records in `summary_record`, and sends `summary_record` to the client over the secure channel.
-   1. Stores the current request information, including the outcome of the validity check, in an [audit log](#audit-logs) associated with the given user.    
+   1. Creates and stores an [audit log](#audit-logs) entry for the current request, including the outcome of the validity check.
  1. The client:
     1. Closes the session.
     1. Outputs `summary_record` to the calling application.
