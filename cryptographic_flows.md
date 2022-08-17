@@ -76,8 +76,8 @@ Protocol:
 1. The client:
    1. [Opens a request session](systems-architecture.md#request-session) for the given user id `user_id`. 
    1. Calls [`retrieve_storage_key`](#retrievestoragekey-functionality), the output of which is `storage_key`. The implementation SHOULD keep this key in memory only and not write to disk.
-   1. [Retrieves](#client-side-storage) the ciphertext `ciphertext` associated to `key_id` from local storage. 
-        1. If successful, computes `arbitrary_key = Dec(storage_key, ciphertext, user_id||key_id)`, outputs `arbitrary_key`, and closes the request session. 
+   1. [Retrieves](#client-side-storage) the ciphertext `ciphertext` associated to `key_id` and the associated data `associated_data` from local storage. 
+        1. If successful, computes `arbitrary_key = Dec(storage_key, ciphertext, associated_data)`, outputs `arbitrary_key`, and closes the request session. 
         1. Otherwise, continues.
    1. Sends a request message to the key server over the open session's secure channel. This message MUST indicate the desire to retrieve the backed up secret and contain `user_id` and `key_id`.
 1. The key server:
