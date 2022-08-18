@@ -67,9 +67,9 @@ We have the following dependencies:
     - [TODO #22](https://github.com/boltlabs-inc/key-mgmt-spec/issues/22): Select and add config, setup, and implementation dependency information.
 - Cryptographic Hash Function `Hash`. We use SHA3-256 throughout in our constructions.
 - CSPRNG, `rng`.
-- A symmetric AEAD scheme that consists of:
-    - An encryption function `Enc` that takes a pair `(key, msg, data)`, where `key` is the symmetric key, `msg` is the message to be encrypted, and `data` is OPTIONAL associated data, and outputs a ciphertext.
-    - A decryption function `Dec` that takes a pair `(key, ciphertext, data)`, where `key` is the symmetric key,`ciphertext` is the a ciphertext to be decrypted, and `data` is OPTIONAL associated data, and outputs a plaintext.
+- Symmetric AEAD scheme. We are using [chacha20poly1305](https://docs.rs/chacha20poly1305/0.10.1/chacha20poly1305/index.html) by RustCrypto, which implements [RFC 8439](https://tools.ietf.org/html/rfc8439). This library is under active development. An earlier release of this repository was audited by NCC Group in February 2020.
+    - This scheme uses a 256-bit pseudorandom key. There are no further requirements on the format or properties of the key.
+    - This implementation will not execute in constant time on processors with a variable-time multiplication operation.
  - [A HMAC-based key derivation function](https://datatracker.ietf.org/doc/html/rfc5869) that is parameterized by `Hash` and consists of:
     - A key derivation function `HKDF` that takes a tuple `(salt, input_key, context, len)`, where `salt` is an optional, non-secret random value, `input_key` is the input key material, `context` is an optional context and application-specific information, and `len` is the length of the output keying material in bytes.
 - [A message authentication code (MAC)].
