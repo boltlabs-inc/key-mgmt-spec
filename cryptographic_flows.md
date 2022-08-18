@@ -5,10 +5,16 @@ Lock Keeper system functionalities are comprised of the following:
 ## Register
 An asset owner that has not previously interacted with the key server MUST register. Registration proceeds as follows:
 
+Input:
+- `user_credentials`, which consists of credentials for use in opening [authenticated sessions](systems-architecture.md#networking).
+    - `account_name`, bytes that represent the asset owner's human-memorable account information, e.g., email address; and
+    - `password`, bytes that represent the asset owner's human-memorable secret authentication information.
+
+Output:
+- A success indicator.
+
+1. The client [opens a registration session](systems-architecture.md#opening-a-registration-session) with the key server using credentials `user_credentials`. The client receives as output an open secure channel and a user identifier `user_id`.
 1. The client:
-    1. Generates `user_id`, a globally unique identifier (GUID). 
-        - [TODO #52](https://github.com/boltlabs-inc/key-mgmt-spec/issues/52): Specify how user IDs are created.
-    1. [Opens a registration session](systems-architecture.md#opening-a-registration-session) with the key server.
     1. Derives `master_key`, a symmetric key of length `len` bytes for [`Enc`](#external-dependencies), from  `export_key`, as follows:
         1. Length `len` should be the default for `Enc`.
         1. Set `master_key = HKDF(export_key, "OPAQUE-derived Lock Keeper master key")`.
@@ -24,12 +30,15 @@ An asset owner that has not previously interacted with the key server MUST regis
     1. [Stores](#server-side-storage) the received ciphertext in a record associated with `user_id`.
     1. Stores the registration registration request in the [audit log](#audit-logs).
 1. The client and server close the session upon completion of the request.
+1. The client outputs a success indicator to the calling application.
 
 ## Retrieve Audit Logs
 The asset owner can request audit logs from the key server.
 
 Input:
-- `user_id`, a 128-bit globally unique identifier (GUID) representing the identity of the asset owner.
+- `user_credentials`, which consists of credentials for use in opening [authenticated sessions](systems-architecture.md#networking).
+    - `account_name`, bytes that represent the asset owner's human-memorable account information, e.g., email address; and
+    - `password`, bytes that represent the asset owner's human-memorable secret authentication information.
 - `type`, one of:
     - `"system only"`, which indicates the asset owner wants a record of registration, logins, and audit log requests;
     - `"key only"`, which indicates the asset owner wants a record of requested key use operations with respect to one or more keys; or
@@ -43,7 +52,7 @@ Output: `summary_record`, which contains the requested history, including timest
 Protocol:
 
 1. The client:
-   1. [Opens a request session](systems-architecture.md#request-session) for the given user id `user_id`. 
+   1. [Opens a request session](systems-architecture.md#request-session) for the given credentials `user_credentials`. The client receives as output an open secure channel and a user identifier `user_id`.
    1. Sends a request message to the key server over the session's secure channel. This message MUST indicate the desire to retrieve audit logs, specify the type of audit requested (i.e., `"system only"`, `"key only"`, or `"all"`) and contain `user_id`.
 1. The key server:
    1. Runs a validity check on the received request and `user_id`(i.e., there must be a valid open request session, the request must conform to the expected format, and `user_id` must be of the expected format and length, and should match that of the open request session). If this check fails, the server MUST reject the request.
@@ -61,14 +70,16 @@ Protocol:
 This client-initiated functionality generates a secret locally and stores the result both locally and remotely.
 
 Input:
-- `user_id`, a 128-bit globally unique identifier (GUID) representing the identity of the asset owner.
+- `user_credentials`, which consists of credentials for use in opening [authenticated sessions](systems-architecture.md#networking).
+    - `account_name`, bytes that represent the asset owner's human-memorable account information, e.g., email address; and
+    - `password`, bytes that represent the asset owner's human-memorable secret authentication information.
 
 Output:
 - `key_id`, a 128-bit unique identifier representing a secret, computed as the (possibly truncated) output of `Hash` over user and scheme parameters and a randomly generated salt.
 
 Protocol:
 1. The client:
-   1. [Opens a request session](systems-architecture.md#request-session) for the given user id `user_id`. 
+   1. [Opens a request session](systems-architecture.md#request-session) for the given credentials `user_credentials`. The client receives as output an open secure channel and a user identifier `user_id`.
    1. Calls [`retrieve_storage_key`](#retrievestoragekey-functionality), the output of which is `storage_key`.
    1. Sends a request message to the key server over the session's secure channel. This message MUST indicate the desire to store a secret remotely and contain `user_id`.
 1. The key server:
@@ -93,7 +104,9 @@ Protocol:
 This client-initiated functionality retrieves a secret from the system and passes use-specific information to the calling application.
 
 Input:
-- `user_id`, a 128-bit globally unique identifier (GUID) representing the identity of the asset owner.
+- `user_credentials`, which consists of credentials for use in opening [authenticated sessions](systems-architecture.md#networking).
+    - `account_name`, bytes that represent the asset owner's human-memorable account information, e.g., email address; and
+    - `password`, bytes that represent the asset owner's human-memorable secret authentication information.
 - `key_id`, a 128-bit unique identifier representing a secret.
 - `context`, one of `NULL`, `"local only"`, or `"export"`, which should indicate the asset owner's intended use of the secret:
     - `NULL`: This option captures internal use of this workflow, i.e., there is no specific asset owner intent specified.
@@ -105,7 +118,7 @@ Output:
 
 Protocol:
 1. The client:
-   1. [Opens a request session](systems-architecture.md#request-session) for the given user id `user_id`. 
+   1. [Opens a request session](systems-architecture.md#request-session) for the given credentials `user_credentials`. The client receives as output an open secure channel and a user identifier `user_id`.
    1. Calls [`retrieve_storage_key`](#retrievestoragekey-functionality), the output of which is `storage_key`. The implementation SHOULD keep this key in memory only and not write to disk.
    1. [Retrieves](#client-side-storage) the ciphertext `ciphertext` associated to `key_id` and the associated data `associated_data` from local storage. 
         1. If successful, computes `arbitrary_key = Dec(storage_key, ciphertext, associated_data)`, outputs `arbitrary_key`, and closes the request session. 
@@ -146,7 +159,9 @@ Non-normative notes:
 This functionality allows an asset owner to _import_ a secret to the system. The imported secret is stored both locally and remotely at the key server.
 
 Input:
-- `user_id`, a 128-bit globally unique identifier (GUID) representing the identity of the asset owner.
+- `user_credentials`, which consists of credentials for use in opening [authenticated sessions](systems-architecture.md#networking).
+    - `account_name`, bytes that represent the asset owner's human-memorable account information, e.g., email address; and
+    - `password`, bytes that represent the asset owner's human-memorable secret authentication information.
 - `secret`, the secret that is being imported, which is of the form ``len || secret_material``, where `len` is 1 byte that represents the length of the secret material `secret_material` in bytes.
 
 Output:
@@ -154,7 +169,7 @@ Output:
 
 Protocol:
 1. The client:
-   1. [Opens a request session](systems-architecture.md#request-session) for the given user id `user_id`. 
+   1. [Opens a request session](systems-architecture.md#request-session) for the given credentials `user_credentials`. The client receives as output an open secure channel and a user identifier `user_id`.
    1. Calls [`retrieve_storage_key`](#retrievestoragekey-functionality), the output of which is `storage_key`.
    1. Sends a request message to the key server over the session's secure channel. This message MUST indicate the desire to store an imported secret remotely and contain `user_id`.
 1. The key server:

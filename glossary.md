@@ -26,6 +26,8 @@
 
 **Protocol**: A multi-message process that accomplishes a particular task within a workflow. *Example: Generate a secret*
 
+**Request**: Any operation undertaken by the client that involves communication with the key server, e.g., register, generate and store a secret, retrieve a secret.
+
 **Service provider**: The entity using Lock Keeper to build a full-featured digital asset manager.
 
 **Session**: A logical interaction between a client and one or more servers at the application layer. Sessions use one or more channels to communicate with messages in order to execute protocols.
