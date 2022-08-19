@@ -63,6 +63,7 @@ Input:
 - `user_credentials`, credentials for use in the OPAQUE protocol:
     - `account_name`, bytes that represent the asset owner's human-memorable account information, e.g., email address; and
     - `password`, bytes that represent the asset owner's human-memorable secret authentication information.
+- `rng`, a seeded CSPRNG held by the key server.
 
 Output:
 - An open, secure channel available for use in the remaining steps of [register](cryptographic_flows.md#register).
@@ -71,8 +72,10 @@ Output:
 Protocol:
 1. The client authenticates the key server and opens a channel with the key server as specified in the [underlying transport section](#systems-architecture.md/#underlying_transport_layer).
 1. The client and key server run the [OPAQUE registration stage](#registration-stage).
-1. The key server generates `user_id`, a globally unique identifier (GUID). The key server stores the identifier `user_id` together with the registration record output from the OPAQUE registration stage. 
-    - [TODO #52](https://github.com/boltlabs-inc/key-mgmt-spec/issues/52): Specify how user IDs are created.
+1. The key server generates `user_id`, a 32-byte globally unique identifier (GUID).
+    1. Generate `user_id` as 32 bytes of of random output from `rng`.
+    1. Checks the server database for a user id with the same value as `user_id`. If one exists, go back to the previous step.
+1. The key server stores the identifier `user_id` together with the registration record output from the OPAQUE registration stage.
 1. The client and key server mutually authenticate via the [OPAQUE authentication stage](#authentication-stage).
 1. The client and server open an authenticated channel secured under a key derived from `session_key`. 
     - [TODO #149](https://github.com/boltlabs-inc/key-mgmt/issues/149): Include additional details here once the implementation from #149 is complete.
