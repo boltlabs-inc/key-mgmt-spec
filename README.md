@@ -43,9 +43,9 @@ We want this repository to be a helpful reference for the following groups:
 
 ### In Scope
 Here is a working list of what should be included in this repository:
-- An overview of what the product is expected to accomplish in our [current development phase](current-development-phase.md) and the [current functionality](cryptographic-flows.md) of the repository. Because we are designing and implementing the product iteratively, this should be updated regularly.
+- An overview of what the product is expected to accomplish in our [current development phase](current-development-phase.md) and the [current functionality](cryptographic_flows.md) of the repository. Because we are designing and implementing the product iteratively, this should be updated regularly.
 - Integration guidance for developers, including any requirements or assumptions for the calling application(s) and how the calling application(s) fits in the overall system architecture, i.e., which components are external-facing. This will be helpful for iterating on our external-facing APIs and overall system functionality.
-- A specification of our [threat model and desired system security and privacy properties](design-goals.md).
+- A specification of our [threat model and desired system security and privacy properties](design-philosophy-and-threat-model.md).
 - A specification of the [system architecture](systems-architecture.md), including application-layer session handling and assumptions on the underlying transport layer. This will be helpful for design iteration, analysis, audits, and obtaining feedback from the community.
 - A specification of the system's [cryptographic protocol flows](cryptographic_flows.md). This should include a description of underlying cryptographic assumptions and desired properties. This will be helpful for design iteration, analysis, audits, and obtaining feedback from the community.
 
