@@ -79,7 +79,7 @@ Protocol:
 1. The client and key server mutually authenticate via the [OPAQUE authentication stage](#authentication-stage).
 1. The client and server open an authenticated channel secured under a key derived from `session_key`. 
     - [TODO #149](https://github.com/boltlabs-inc/key-mgmt/issues/149): Include additional details here once the implementation from #149 is complete.
-    - Implementation Note: This key is deterministically derived from `session_key` and should be used as a key for a message authentication code scheme `MAC`. In the following, when the client and key server send each other messages, it is assumed that these messages are authenticated under this MAC/key pair. The key server should additionally reject all messages sent over this channel that fail verification checks on the received ciphertexts. The implementor should be careful to use constant-time verification of the authentication tags.
+    - Implementation Note: This key is deterministically derived from `session_key` and should be used as a key for a message authentication code scheme `MAC`. In the following, when the client and key server send each other messages, it is assumed that these messages are authenticated under this MAC/key pair. The key server and the client should additionally reject all messages sent over this channel that fail verification checks on the received ciphertexts. The implementor should be careful to use constant-time verification of the authentication tags.
 1. The key server sends `user_id` to the client over the authenticated channel.
 1. At this point, the registration session is considered _open_. 
 
@@ -87,7 +87,7 @@ Protocol:
 We have the following requirements for using an open registration session:
     
 1. All messages sent between the client and server MUST be over this authenticated channel, i.e., all messages should include an authentication tag that is computed under the selected MAC scheme using the shared key. 
-1. The key server MUST additionally reject all messages sent over this channel that fail the MAC verification checks.
+1. The key server and the client MUST additionally reject all messages sent over this channel that fail the MAC verification checks.
 1. The only valid request for a registration session is a request to [complete registration](cryptographic_flows.md#complete-registration).
 1. The key server MUST close the session after completion of the complete registration request.
     - [TODO #51](https://github.com/boltlabs-inc/key-mgmt-spec/issues/51): Set recommendations for sane request limits and timeouts.
@@ -109,14 +109,14 @@ Protocol:
 1. The server stores the authentication attempt, including the outcome, in an [audit log](cryptographic_flows.md#audit-logs) associated with the given user. 
 1. The client and server open an authenticated channel secured under a key derived from `session_key`. 
     - [TODO #149](https://github.com/boltlabs-inc/key-mgmt/issues/149): Include additional details here once the implementation from #149 is complete.
-    - Implementation Note: This deterministically-derived key should be used as a key for a message authentication code scheme `MAC`. In the following, when the client and key server send each other messages, it is assumed that these messages are authenticated under this MAC/key pair. The key server should additionally reject all messages sent over this channel that fail verification checks on the received ciphertexts. The implementor should be careful to use constant-time verification of the authentication tags.
+    - Implementation Note: This deterministically-derived key should be used as a key for a message authentication code scheme `MAC`. In the following, when the client and key server send each other messages, it is assumed that these messages are authenticated under this MAC/key pair. The key server and the client should additionally reject all messages sent over this channel that fail verification checks on the received ciphertexts. The implementor should be careful to use constant-time verification of the authentication tags.
 1. The key server retrieves the identifier `user_id` associated with the authenticated client and sends `user_id` to the client over the authenticated channel.
 1. At this point, the request session is consider _open_. 
 
 #### Using a request session
 We have the following requirements for using an open request session:
 1. All messages sent between the client and server MUST be over this authenticated channel, i.e., all messages should include an authentication tag that is computed under the selected MAC scheme using the shared key. 
-1. The key server MUST additionally reject all messages sent over this channel that fail the MAC verification checks.
+1. The key server and the client MUST additionally reject all messages sent over this channel that fail the MAC verification checks.
 1. The client may then send a single request (i.e., one of store, retrieve, audit, import, export) to the key server during this session.
 1. The key server MUST close the session upon completion of the given request.
     - [TODO #51](https://github.com/boltlabs-inc/key-mgmt-spec/issues/51): Set recommendations for sane request limits and timeouts.
