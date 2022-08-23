@@ -17,7 +17,7 @@ Output:
 1. The client:
     1. Derives `master_key`, a symmetric key of length `len` bytes for [`Enc`](#external-dependencies), from  `export_key`, as follows:
         1. Length `len` should be the default for `Enc`.
-        1. Set `master_key = HKDF(export_key, "OPAQUE-derived Lock Keeper master key")`.
+        1. Set `master_key = HKDF(export_key, "OPAQUE-derived Lock Keeper master key", len)`.
     1. Runs the [generate protocol](cryptographic_flows.md#generate-a-secret) to get a symmetric key `storage_key` for [`Enc`](#external-dependencies) of length 32 bytes.
         - The `storage key` MUST NOT be saved, stored, or used in any context outside this protocol. It must not be passed to the calling application.
     1. Computes a ciphertext `encrypted_storage_key = Enc(master_key, storage_key, user_id||"storage key")`.
@@ -201,6 +201,7 @@ See [the current development phase](current-development-phase.md#cryptographic-p
     - A decryption function `Dec` that takes a pair `(key, ciphertext, data)`, where `key` is the symmetric key,`ciphertext` is the a ciphertext to be decrypted, and `data` is OPTIONAL associated data, and outputs a plaintext.
 - [A HMAC-based key derivation function](https://datatracker.ietf.org/doc/html/rfc5869) that is parameterized by `Hash` and consists of:
     - A key derivation function `HKDF` that takes a tuple `(salt, input_key, context, len)`, where `salt` is an optional, non-secret random value, `input_key` is the input key material, `context` is an optional context and application-specific information, and `len` is the length of the output keying material in bytes.
+    - This protocol does not use the optional salt, so calls to `HKDF` take the simplified tuple `(input_key, context, len)`.
 
 Inter-dependency constraints include:
 - The length of the a key for `Enc` must be no more than 255 times the length of the output of `Hash`.
@@ -253,7 +254,7 @@ Protocol:
 1. The client:
     1. Derives `master_key`, a symmetric key of length `len` bytes for [`Enc`](#external-dependencies), from `export_key`, as follows:
         1. Length `len` should be the default for `Enc`.
-        1. Set `master_key = HKDF(export_key, "OPAQUE-derived Lock Keeper master key")`.
+        1. Set `master_key = HKDF(export_key, "OPAQUE-derived Lock Keeper master key", len)`.
     1. Computes `storage_key = Dec(master_key, ciphertext, user_id||"storage key")`, where `ciphertext` is the received ciphertext from the key server.
     1. Deletes `master_key` from memory.
     1. Outputs `storage_key`.
