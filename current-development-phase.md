@@ -62,7 +62,6 @@ We have the following dependencies:
     - This implementation relies on [voprf](https://github.com/novifinancial/voprf), which is tracking [the IETF RFC on OPRFs](https://datatracker.ietf.org/doc/draft-irtf-cfrg-voprf/).
     - As both of the above RFCs are in flux, we expect ongoing updates.
     - Following the terminology of the RFC, we use the following OPAQUE-3DH configuration: OPRF(ristretto255, SHA-512), HKDF-SHA-512, HMAC-SHA-512, SHA-512, ristretto255, with Argon2 as the KSF, and no shared context information. 
-
 - TLS 1.3. 
     - [TODO #22](https://github.com/boltlabs-inc/key-mgmt-spec/issues/22): Select and add config, setup, and implementation dependency information.
 - Cryptographic Hash Function `Hash`. We use [SHA3-256](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.202.pdf) throughout in our constructions, as implemented in [sha3](https://docs.rs/sha3/latest/sha3/) by RustCrypto.
@@ -71,8 +70,8 @@ We have the following dependencies:
     - This scheme uses a 256-bit pseudorandom key. There are no further requirements on the format or properties of the key.
     - This implementation will not execute in constant time on processors with a variable-time multiplication operation.
  - HMAC-based key derivation function. We use [hkdf](https://docs.rs/rust-crypto/0.2.36/crypto/hkdf/) by RustCrypto, which implements [RFC 5869](https://datatracker.ietf.org/doc/html/rfc5869).
-- [A message authentication code (MAC)].
-    - [TODO #149]([TODO #149](https://github.com/boltlabs-inc/key-mgmt/issues/149): Propagate implementation decisions from #149 here.
+- A message authentication code (MAC).
+    - [TODO #149](https://github.com/boltlabs-inc/key-mgmt/issues/149): Propagate implementation decisions from #149 here.
 
 
 ## Expected Outcomes
