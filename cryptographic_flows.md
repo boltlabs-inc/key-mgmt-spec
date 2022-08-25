@@ -6,12 +6,17 @@ Lock Keeper system functionalities are comprised of the following:
 An asset owner that has not previously interacted with the key server MUST register. Registration proceeds as follows:
 
 Input:
-- `user_credentials`, which consists of credentials for use in opening [authenticated sessions](systems-architecture.md#networking).
-    - `account_name`, bytes that represent the asset owner's human-memorable account information, e.g., email address; and
-    - `password`, bytes that represent the asset owner's human-memorable secret authentication information.
+- Client input:
+    - `user_credentials`, which consists of credentials for use in opening [authenticated sessions](systems-architecture.md#networking).
+        - `account_name`, bytes that represent the asset owner's human-memorable account information, e.g., email address; and
+        - `password`, bytes that represent the asset owner's human-memorable secret authentication information.
+- Server input: none
 
 Output:
-- A success indicator.
+- Client output:
+    - A success indicator.
+- Server output:
+    - A success indicator.
 
 1. The client [opens a registration session](systems-architecture.md#opening-a-registration-session) with the key server using credentials `user_credentials`. The client receives as output an open secure channel and a user identifier `user_id`.
 1. The client:
@@ -29,6 +34,7 @@ Output:
     1. Checks that the received ciphertext is of the expected format and length.
     1. [Stores](#server-side-storage) the received ciphertext in a record associated with `user_id`.
     1. Stores the registration registration request in the [audit log](#audit-logs).
+    1. Outputs a success indicator.
 1. The client and server close the session upon completion of the request.
 1. The client outputs a success indicator to the calling application.
 
@@ -36,18 +42,24 @@ Output:
 The asset owner can request audit logs from the key server.
 
 Input:
-- `user_credentials`, which consists of credentials for use in opening [authenticated sessions](systems-architecture.md#networking).
-    - `account_name`, bytes that represent the asset owner's human-memorable account information, e.g., email address; and
-    - `password`, bytes that represent the asset owner's human-memorable secret authentication information.
-- `type`, one of:
-    - `"system only"`, which indicates the asset owner wants a record of registration, logins, and audit log requests;
-    - `"key only"`, which indicates the asset owner wants a record of requested key use operations with respect to one or more keys; or
-    - `"all"`, which indicates the asset owner wants both system and requested key use operations.
-- `key_identifiers`, an OPTIONAL list of key identifiers. If no key identifier is provided, both the `"all"` and `"key only"` options above will return logs for all keys.
-- `after_date`, an OPTIONAL date-time input to ask for logs after a certain date.
-- `before_date`, an OPTIONAL date-time input to ask for logs before a certain date. If both `after_date` and `before_date` are provided, logs from within that date range will be returned.
+- Client Input:
+    - `user_credentials`, which consists of credentials for use in opening [authenticated sessions](systems-architecture.md#networking).
+        - `account_name`, bytes that represent the asset owner's human-memorable account information, e.g., email address; and
+        - `password`, bytes that represent the asset owner's human-memorable secret authentication information.
+    - `type`, one of:
+        - `"system only"`, which indicates the asset owner wants a record of registration, logins, and audit log requests;
+        - `"key only"`, which indicates the asset owner wants a record of requested key use operations with respect to one or more keys; or
+        - `"all"`, which indicates the asset owner wants both system and requested key use operations.
+    - `key_identifiers`, an OPTIONAL list of key identifiers. If no key identifier is provided, both the `"all"` and `"key only"` options above will return logs for all keys.
+    - `after_date`, an OPTIONAL date-time input to ask for logs after a certain date.
+    - `before_date`, an OPTIONAL date-time input to ask for logs before a certain date. If both `after_date` and `before_date` are provided, logs from within that date range will be returned.
+- Server Input: none.
 
-Output: `summary_record`, which contains the requested history, including timestamps.
+Output: 
+- Client output:
+    - `summary_record`, which contains the requested history, including timestamps.
+- Server output: 
+    - A success indicator.
 
 Protocol:
 
@@ -58,6 +70,7 @@ Protocol:
    1. Runs a validity check on the received request and `user_id`(i.e., there must be a valid open request session, the request must conform to the expected format, and `user_id` must be of the expected format and length, and should match that of the open request session). If this check fails, the server MUST reject the request.
    1. Retrieves all log records relevant to the client's request, summarises these records in `summary_record`, and sends `summary_record` to the client over the secure channel.
    1. Creates and stores an [audit log](#audit-logs) entry for the current request, including the outcome of the validity check.
+   1. Outputs a success indicator.
  1. The client:
     1. Closes the session.
     1. Outputs `summary_record` to the calling application.
@@ -70,12 +83,17 @@ Protocol:
 This client-initiated functionality generates a secret locally and stores the result both locally and remotely.
 
 Input:
-- `user_credentials`, which consists of credentials for use in opening [authenticated sessions](systems-architecture.md#networking).
-    - `account_name`, bytes that represent the asset owner's human-memorable account information, e.g., email address; and
-    - `password`, bytes that represent the asset owner's human-memorable secret authentication information.
+- Client input:
+    - `user_credentials`, which consists of credentials for use in opening [authenticated sessions](systems-architecture.md#networking).
+        - `account_name`, bytes that represent the asset owner's human-memorable account information, e.g., email address; and
+        - `password`, bytes that represent the asset owner's human-memorable secret authentication information.
+- Server input: none.
 
 Output:
-- `key_id`, a 128-bit unique identifier representing a secret, computed as the (possibly truncated) output of `Hash` over user and scheme parameters and a randomly generated salt.
+- Client output:
+    - `key_id`, a 128-bit unique identifier representing a secret, computed as the (possibly truncated) output of `Hash` over user and scheme parameters and a randomly generated salt.
+- Server output:
+    - A success indicator.
 
 Protocol:
 1. The client:
@@ -95,6 +113,7 @@ Protocol:
     1. [Stores](#server-side-storage) a tuple containing the received ciphertext, `user_id`, and `key_id` in the server database.
     1. Stores the current request information, including the outcome of the validity check, in an [audit log](#audit-logs) associated with the given user.    
     1. Sends an ACK to the client.
+    1. Outputs a success indicator.
 1. The client:
     1. Closes the session.
     1. Outputs `key_id` to the calling application.
@@ -104,17 +123,22 @@ Protocol:
 This client-initiated functionality retrieves a secret from the system and passes use-specific information to the calling application.
 
 Input:
-- `user_credentials`, which consists of credentials for use in opening [authenticated sessions](systems-architecture.md#networking).
-    - `account_name`, bytes that represent the asset owner's human-memorable account information, e.g., email address; and
-    - `password`, bytes that represent the asset owner's human-memorable secret authentication information.
-- `key_id`, a 128-bit unique identifier representing a secret.
-- `context`, one of `NULL`, `"local only"`, or `"export"`, which should indicate the asset owner's intended use of the secret:
-    - `NULL`: This option captures internal use of this workflow, i.e., there is no specific asset owner intent specified.
-    - `"local only"`: This option captures immediate uses of the secret that are either local to the calling application or the asset owner's system. 
-    - `"export"`: This option captures other, potentially non-local uses of the secret, i.e., the value is expected to be passed and persist outside of the calling application.
+- Client input:
+    - `user_credentials`, which consists of credentials for use in opening [authenticated sessions](systems-architecture.md#networking).
+        - `account_name`, bytes that represent the asset owner's human-memorable account information, e.g., email address; and
+        - `password`, bytes that represent the asset owner's human-memorable secret authentication information.
+    - `key_id`, a 128-bit unique identifier representing a secret.
+    - `context`, one of `NULL`, `"local only"`, or `"export"`, which should indicate the asset owner's intended use of the secret:
+        - `NULL`: This option captures internal use of this workflow, i.e., there is no specific asset owner intent specified.
+        - `"local only"`: This option captures immediate uses of the secret that are either local to the calling application or the asset owner's system. 
+        - `"export"`: This option captures other, potentially non-local uses of the secret, i.e., the value is expected to be passed and persist outside of the calling application.
+- Server input: none.
 
 Output:
-- Either a success indicator OR `arbitrary_key`, the arbitrary secret that is backed up remotely.
+- Client output:
+    - Either a success indicator OR `arbitrary_key`, the arbitrary secret that is backed up remotely.
+- Server output:
+    - A success indicator.
 
 Protocol:
 1. The client:
@@ -125,6 +149,7 @@ Protocol:
         1. Otherwise, continues.
    1. Sends a request message to the key server over the open session's secure channel. This message MUST indicate the desire to retrieve the backed up secret and contain `user_id` and `key_id`.
 1. The key server:
+    1. If the client closes the request session, outputs a success indicator and halts. Otherwise, continues.
     1. Runs a validity check on the received request, `user_id`, and `key_id`. If this check fails, the server MUST reject the request. The validation check includes the following:       
         1. There must be a valid open request session, 
         1. The request must conform to the expected format and content, 
@@ -134,12 +159,13 @@ Protocol:
     1. [Retrieves](#server-side-storage) the associated ciphertext, `ciphertext` and associated data, `associated_data`, for the given pair `(user_id, key_id)` from its database and sends this ciphertext, together with the associated data, to the client.
         - [TODO #36](https://github.com/boltlabs-inc/key-mgmt-spec/issues/36): The key server should log the intended use of this retrieval request.
     1. Stores the current request information, including the outcome of the validity check, in an [audit log](#audit-logs) associated with the given user.  
+    1. Outputs a success indicator.
 1. The client:
     1. Computes `arbitrary_key = Dec(storage_key, ciphertext, associated_data)`, where `ciphertext` is the received ciphertext from the key server and `associated_data` is the associated data received from the server.
     1. Deletes `storage_key` from memory.
     1. Closes the open request session.
     1. [Stores](#client-side-storage) `ciphertext` in its local storage.
-    1. If `context` is set to `NULL`, outputs a success indicator and halts.
+    1. If `context` is set to `NULL`, outputs a success indicator to the calling application and halts.
     1. Otherwise, 
         1. If `context` is set to `"local only"`, outputs `arbitrary_key` to the calling application.
         1. If `context` is set to `"export"`, the client computes `exported key` as `len || secret`, as described above, and outputs `exported_key` to the calling application.
@@ -159,13 +185,18 @@ Non-normative notes:
 This functionality allows an asset owner to _import_ a secret to the system. The imported secret is stored both locally and remotely at the key server.
 
 Input:
-- `user_credentials`, which consists of credentials for use in opening [authenticated sessions](systems-architecture.md#networking).
-    - `account_name`, bytes that represent the asset owner's human-memorable account information, e.g., email address; and
-    - `password`, bytes that represent the asset owner's human-memorable secret authentication information.
-- `secret`, the secret that is being imported, which is of the form ``len || secret_material``, where `len` is 1 byte that represents the length of the secret material `secret_material` in bytes.
+- Client input:
+    - `user_credentials`, which consists of credentials for use in opening [authenticated sessions](systems-architecture.md#networking).
+        - `account_name`, bytes that represent the asset owner's human-memorable account information, e.g., email address; and
+        - `password`, bytes that represent the asset owner's human-memorable secret authentication information.
+    - `secret`, the secret that is being imported, which is of the form ``len || secret_material``, where `len` is 1 byte that represents the length of the secret material `secret_material` in bytes.
+- Server input: none.
 
 Output:
-- `key_id`, a 128-bit unique identifier representing a key, computed as the (possibly truncated) output of `Hash` over user and scheme parameters and a randomly generated salt.
+- Client output:
+    - `key_id`, a 128-bit unique identifier representing a key, computed as the (possibly truncated) output of `Hash` over user and scheme parameters and a randomly generated salt.
+- Server output:
+    - A success indicator.
 
 Protocol:
 1. The client:
@@ -184,6 +215,7 @@ Protocol:
     1. [Stores](#server-side-storage) a tuple containing the received ciphertext, and the associated data `user_id||key_id||"imported key"`in the server database.
     1. Stores the current request information, including the outcome of the validity check, in an [audit log](#audit-logs) associated with the given user.    
     1. Sends an ACK to the client.
+    1. Outputs a success indicator.
 1. The client:
     1. Closes the session.
     1. Outputs `key_id` to the calling application.
@@ -205,7 +237,7 @@ See [the current development phase](current-development-phase.md#cryptographic-p
 Inter-dependency constraints include:
 - The length of the a key for `Enc` must be no more than 255 times the length of the output of `Hash`.
 
-#### Generate a secret
+#### Generate a secret 
 Input:
   - A length `len` in bytes. Default length is 32 bytes.
   - A seeded CSPRNG `rng`.
@@ -226,7 +258,7 @@ Code that consumes an `arbitrary_key` SHOULD include validation checks specific 
 
 Implementation guidance: Care should always be taken when seeding a CSPRNG to ensure that the seed has sufficient entropy. Using a PRNG that reseeds periodically may be advisable.
 
-#### Generate a key identifier
+#### Generate a key identifier 
 This subprotocol is run by the key server to generate a 32-byte globally unique identifier, `key_id`, as follows:
 1. Generates `randomness` as 32 bytes of randomness output from `rng`.
 1. Computes `key_id` as `Hash(domain_sep, 16, user_id, 32, randomness)`, truncated to 128-bits if necessary, where `domain_sep` is a static string acting as a domain separator, prepended with its length in bytes.
@@ -234,16 +266,22 @@ This subprotocol is run by the key server to generate a 32-byte globally unique 
 This functionality should fail (with negligible probability) if the generated identifier is not unique among the key server's stored identifiers. 
 
 
-#### `retrieve_storage_key` functionality
+#### `retrieve_storage_key` protocol
 This functionality allows the client to request and receive the key `storage_key` from the key server, where `storage_key` is a symmetric key for the implementation's selected AEAD used for remote storage.
 
-Inputs:
-- An open request session.
-- `user_id`, a universally unique identifer that represents the user.
-- `export_key`, a symmetric key from the open request session.
+Input:
+- Client Input:
+    - An open request session.
+    - `user_id`, a universally unique identifer that represents the user.
+    - `export_key`, a symmetric key from the open request session.
+- Server Input:
+    - An open request session.
 
-Outputs:
-- `storage_key`, a symmetric key for an AEAD scheme.
+Output:
+- Client Output:
+    - `storage_key`, a symmetric key for an AEAD scheme.
+- Server Output:
+    - A success indicator.
 
 Protocol:
 1. The client:
@@ -252,6 +290,7 @@ Protocol:
 1. The key server:
     1. Runs a validity check on the received request and `user_id` (i.e., there must be a valid open request session, the request must conform to the expected format and content, and `user_id` must be of the expected format and length, and should match that of the open request session). If this check fails, the server MUST reject the request.
     1. [Retrieves](#server-side-storage) the associated storage key ciphertext for the given user from its database and sends the ciphertext to the client.
+    1. Outputs a success indicator.
 1. The client:
     1. Derives `master_key`, a symmetric key of length `len` bytes for [`Enc`](#external-dependencies), from `export_key`, as follows:
         1. Length `len` should be the default for `Enc`.
