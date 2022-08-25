@@ -34,10 +34,15 @@ We wish to ensure the following in our implementation:
 We assume a Public Key Infrastructure (PKI). For all session types, the local client first authenticates the key server and opens a channel using TLS 1.3.
   - [TODO #22](https://github.com/boltlabs-inc/key-mgmt-spec/issues/22): A PKI and TLS configuration must be selected and the details added to this specification in this section and [here](current-development-phase.md#cryptographic-protocol-and-implementation-dependencies) as appropriate.
 
-### Underlying mutual authentication protocol
+Non-normative note: In the current design, we rely on TLS for confidentiality and, during the registration stage of OPAQUE, for authentication of the server.
+
+### Application-layer authenticated channel
+In Lock Keeper, we create an additional, [application-layer channel](#application-layer-authenticated-channel) that provides mutual authentication, using an underlying [mutual authentication protocol](#underlying-mutual-authentication-protocol) as a building block.
+
+#### Underlying mutual authentication protocol
 We use the OPAQUE protocol for mutual authentication of asset owners and the key server; see [this section](current-development-phase.md#cryptographic-protocol-and-implementation-dependencies) for protocol version and dependency information. 
 
-#### Registration stage 
+##### Registration stage 
 
 The registration stage of OPAQUE satisfies the following:
 1. The client inputs `user_credentials`, which consists of:
@@ -47,13 +52,18 @@ The registration stage of OPAQUE satisfies the following:
 1. The client receives as output a value `export_key`, which is a pseudorandom value, independent of all other OPAQUE protocol values, that is known only to the client.
 1. The key server receives as output a record that corresponds to the client's registration, which includes an identifier `account_name` that matches that of the client.
 
-#### Authentication stage
+##### Authentication stage
 The authentication stage of OPAQUE is a password-based authenticated key exchange protocol that satisfies the following:
 1. The client receives as output two values, an `export_key` (matching that from the registration phase) and a `session_key` (which is the output of an authenticated key exchange).
 1. The server receives as output a `session_key` matching that of the client.
 1. Both client and server receive confirmation of the success of the AKE.
 
 Non-normative note: The client and server MUST receive confirmation that the AKE has completed successfully _prior_ to using `session_key`, else security is compromised.
+
+#### Opening the application-layer authenticated channel
+ The client and server open an authenticated channel secured under a key derived from `session_key`. 
+- [TODO #149](https://github.com/boltlabs-inc/key-mgmt/issues/149): Include additional details here once the implementation from #149 is complete.
+- Implementation Note: This key is deterministically derived from `session_key` and should be used as a key for a message authentication code scheme `MAC`. In the following, when the client and key server send each other messages, it is assumed that these messages are authenticated under this MAC/key pair. The key server and the client should additionally reject all messages sent over this channel that fail verification checks on the received ciphertexts. The implementor should be careful to use constant-time verification of the authentication tags.
 
 ### Opening and using a registration session
 The client initiates a registration session as a subprotocol of the Lock Keeper [register](cryptographic_flows.md#register) functionality.
@@ -77,9 +87,7 @@ Protocol:
     1. Checks the server database for a user id with the same value as `user_id`. If one exists, go back to the previous step.
 1. The key server stores the identifier `user_id` together with the registration record output from the OPAQUE registration stage.
 1. The client and key server mutually authenticate via the [OPAQUE authentication stage](#authentication-stage).
-1. The client and server open an authenticated channel secured under a key derived from `session_key`. 
-    - [TODO #149](https://github.com/boltlabs-inc/key-mgmt/issues/149): Include additional details here once the implementation from #149 is complete.
-    - Implementation Note: This key is deterministically derived from `session_key` and should be used as a key for a message authentication code scheme `MAC`. In the following, when the client and key server send each other messages, it is assumed that these messages are authenticated under this MAC/key pair. The key server and the client should additionally reject all messages sent over this channel that fail verification checks on the received ciphertexts. The implementor should be careful to use constant-time verification of the authentication tags.
+1. The client and server [open an authenticated channel](#opening-the-application-layer-authenticated-channel) secured under a key derived from `session_key`. 
 1. The key server sends `user_id` to the client over the authenticated channel.
 1. At this point, the registration session is considered _open_. 
 
@@ -107,9 +115,7 @@ Protocol:
 1. The client authenticates the key server and opens a channel with the key server as specified above in the [underlying transport section](#underlying_transport_layer).
 1. The client and key server mutually authenticate via the [OPAQUE authentication stage](#authentication-stage).
 1. The server stores the authentication attempt, including the outcome, in an [audit log](cryptographic_flows.md#audit-logs) associated with the given user. 
-1. The client and server open an authenticated channel secured under a key derived from `session_key`. 
-    - [TODO #149](https://github.com/boltlabs-inc/key-mgmt/issues/149): Include additional details here once the implementation from #149 is complete.
-    - Implementation Note: This deterministically-derived key should be used as a key for a message authentication code scheme `MAC`. In the following, when the client and key server send each other messages, it is assumed that these messages are authenticated under this MAC/key pair. The key server and the client should additionally reject all messages sent over this channel that fail verification checks on the received ciphertexts. The implementor should be careful to use constant-time verification of the authentication tags.
+1. The client and server [open an authenticated channel](#opening-the-application-layer-authenticated-channel) secured under a key derived from `session_key`. 
 1. The key server retrieves the identifier `user_id` associated with the authenticated client and sends `user_id` to the client over the authenticated channel.
 1. At this point, the request session is consider _open_. 
 
