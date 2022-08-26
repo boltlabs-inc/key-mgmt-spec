@@ -49,7 +49,7 @@ The registration stage of OPAQUE satisfies the following:
     - `account_name`, bytes that represent the asset owner's human-memorable account information, e.g., email address; and
     - `password`, bytes that represent the asset owner's human-memorable secret authentication information.
 1. The key server MUST check that the given user identifier `account_name` is _fresh_ (i.e., no user has previously registered with the given identifier) and of the expected format and length. If this check fails, the key server MUST fail the registration request.
-1. The client receives as output a value `export_key`, which is a pseudorandom value, independent of all other OPAQUE protocol values, that is known only to the client.
+1. The client receives as output a value `export_key`, which is a pseudorandom value, distributed independently of all other OPAQUE protocol values, that is known only to the client.
 1. The key server receives as output a record that corresponds to the client's registration, which includes an identifier `account_name` that matches that of the client.
 
 ##### Authentication stage
@@ -98,7 +98,7 @@ We have the following requirements for using an open registration session:
 1. The key server and the client MUST additionally reject all messages sent over this channel that fail the MAC verification checks.
 1. The only valid request for a registration session is a request to [complete registration](cryptographic_flows.md#complete-registration).
 1. The key server MUST close the session after completion of the complete registration request.
-    - [TODO #51](https://github.com/boltlabs-inc/key-mgmt-spec/issues/51): Set recommendations for sane request limits and timeouts.
+    - [TODO #51](https://github.com/boltlabs-inc/key-mgmt-spec/issues/51): Set recommendations for request limits and timeouts that allow more than one request per session.
 
 ### Opening and using a request session
 The client initiates a request session as a prerequisite for processing any _requests_, i.e., operations that involve communication with the key server.
@@ -125,4 +125,4 @@ We have the following requirements for using an open request session:
 1. The key server and the client MUST additionally reject all messages sent over this channel that fail the MAC verification checks.
 1. The client may then send a single request (i.e., one of store, retrieve, audit, import, export) to the key server during this session.
 1. The key server MUST close the session upon completion of the given request.
-    - [TODO #51](https://github.com/boltlabs-inc/key-mgmt-spec/issues/51): Set recommendations for sane request limits and timeouts.
+    - [TODO #51](https://github.com/boltlabs-inc/key-mgmt-spec/issues/51): Set recommendations for request limits and timeouts that allow more than one request per session.

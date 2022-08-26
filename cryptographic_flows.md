@@ -156,8 +156,7 @@ Protocol:
         1. The `user_id` must be of the expected format and length, and should match that of the open request session,
         1. The `key_id` must be associated with the given `user_id` in the key server's database.
         1. The intended use must match one of the expected options.
-    1. [Retrieves](#server-side-storage) the associated ciphertext, `ciphertext` and associated data, `associated_data`, for the given pair `(user_id, key_id)` from its database and sends this ciphertext, together with the associated data, to the client.
-        - [TODO #36](https://github.com/boltlabs-inc/key-mgmt-spec/issues/36): The key server should log the intended use of this retrieval request.
+    1. [Retrieves](#server-side-storage) the associated ciphertext, `ciphertext` and associated data, `associated_data`, for the given pair `(user_id, key_id)` from its database and sends `ciphertext` and `associated data` to the client.
     1. Stores the current request information, including the outcome of the validity check, in an [audit log](#audit-logs) associated with the given user.  
     1. Outputs a success indicator.
 1. The client:
@@ -289,7 +288,7 @@ Protocol:
     1. Sends a request message to the key server over the open session's secure channel. This message MUST indicate the desire to retrieve the storage key and contain `user_id`.
 1. The key server:
     1. Runs a validity check on the received request and `user_id` (i.e., there must be a valid open request session, the request must conform to the expected format and content, and `user_id` must be of the expected format and length, and should match that of the open request session). If this check fails, the server MUST reject the request.
-    1. [Retrieves](#server-side-storage) the associated storage key ciphertext for the given user from its database and sends the ciphertext to the client.
+    1. [Retrieves](#server-side-storage) the associated storage key ciphertext, `ciphertext` for the given user from its database and sends `ciphertext` to the client.
     1. Outputs a success indicator.
 1. The client:
     1. Derives `master_key`, a symmetric key of length `len` bytes for [`Enc`](#external-dependencies), from `export_key`, as follows:
