@@ -4,10 +4,20 @@
 This repository holds the current design specification for [Lock Keeper](https://github.com/boltlabs-inc/key-mgmt), a human-centric digital asset management system.
 
 ## Contents
+### Top-level
+1. [README](README.md)<br>
+1. [Design Philosophy and Threat Model](design-philosophy-and-threat-model.md)<br>
+1. [Stakeholders and System Goals](stakeholders-and-goals.md)<br>
+1. [Development Notes](dev-notes.md) <br>
+1. [System Architecture](systems-architecture.md)<br>
+1. [System Functionality](cryptographic_flows.md)<br>
+1. [Where to Find Code](repository-list.md)<br>
+1. [Glossary](glossary.md)
 
-[Problem Statement](#problem-statement)<br>
-[Repository Overview](#repository-overview)<br>
-[Repository Navigation](#repository-navigation)<br>
+### This page
+1. [Contents](#contents)<br>
+1. [Problem Statement](#problem-statement)<br>
+1. [Repository Overview](#repository-overview)<br>
 
 ## Problem Statement
 
@@ -43,21 +53,15 @@ We want this repository to be a helpful reference for the following groups:
 
 ### In Scope
 Here is a working list of what should be included in this repository:
-- An overview of what the product is expected to accomplish in our [current development phase](current-development-phase.md) and the [current functionality](cryptographic_flows.md) of the repository. Because we are designing and implementing the product iteratively, this should be updated regularly.
+- Overviews of what the product is expected to accomplish in our current and near-term [development notes](dev-notes.md). Because we are designing and implementing the product iteratively, expect ongoing updates. Currently this includes:
+    - [Arbitrary Secrets Overview](arbitrary-secrets-overview.md)
 - Integration guidance for developers, including any requirements or assumptions for the calling application(s) and how the calling application(s) fits in the overall system architecture, i.e., which components are external-facing. This will be helpful for iterating on our external-facing APIs and overall system functionality.
 - A specification of our [threat model and desired system security and privacy properties](design-philosophy-and-threat-model.md).
 - A specification of the [system architecture](systems-architecture.md), including application-layer session handling and assumptions on the underlying transport layer. This will be helpful for design iteration, analysis, audits, and obtaining feedback from the community.
-- A specification of the system's [cryptographic protocol flows](cryptographic_flows.md). This should include a description of underlying cryptographic assumptions and desired properties. This will be helpful for design iteration, analysis, audits, and obtaining feedback from the community.
+- A specification of [system functionalities](system-functionalities.md). This includes a description of underlying cryptographic assumptions and desired properties. This will be helpful for design iteration, analysis, audits, and obtaining feedback from the community.
 
 ### Out of Scope
 We do not attempt to capture granular, non-cryptographic implementation and software architecture decisions. This type of development decision should be documented clearly in [Lock Keeper](https://github.com/boltlabs-inc/key-mgmt).
 
-## Repository Navigation
-[Design Philosophy and Threat Model](design-philosophy-and-threat-model.md)<br>
-[Stakeholders and System Goals](stakeholders-and-goals.md)<br>
-[Current Development Phase](current-development-phase.md) <br>
-[System Architecture](systems-architecture.md)<br>
-[System Functionality](cryptographic_flows.md)<br>
-[Where to Find Code](repository-list.md)<br>
-[Glossary](glossary.md)
+
 

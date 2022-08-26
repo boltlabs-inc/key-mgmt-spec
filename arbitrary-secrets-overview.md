@@ -1,6 +1,14 @@
-# Arbitrary Secrets Proof of Concept 
+# Arbitrary Secrets 
 
-In this phase, we want to build a general-purpose, human-centric system that stores and retrieves secrets on a single server. This proof of concept (PoC) will include basic cryptography to realize an end-to-end encrypted storage of arbitrary secrets. This constitutes a fundamental building block of our larger imagined digital asset management system. 
+Lock Keeper should provide a general-purpose, human-centric system that stores and retrieves secrets on a single server. 
+
+## Page Contents
+1. [Assumptions and Requirements](#assumptions-and-requirements) <br>
+1. [System Architecture](#system-architecture) <br>
+1. [Workflows](#workflows) <br>
+    1. [Setting up secure channels with the key server](#setting-up-secure-channels-with-the-key-server)<br>
+    1. [Operations on arbitrary secrets](#operations-on-arbitrary-secrets)<br>
+1. [Cryptographic Protocol and Implementation Dependencies](#cryptographic-protocol-and-implementation-dependencies) <br>
 
 ## Assumptions and Requirements
 - The primary stakeholder is a human with secrets. We call this human an _asset owner_.
@@ -73,6 +81,3 @@ We have the following dependencies:
 - A message authentication code (MAC).
     - [TODO #149](https://github.com/boltlabs-inc/key-mgmt/issues/149): Propagate implementation decisions from #149 here.
 
-
-## Expected Outcomes
-A working command-line demo with cryptography for handling arbitrary secrets. 
