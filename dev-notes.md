@@ -1,10 +1,10 @@
 
 
 ## Development Notes
-We are iteratively developing a proof of concept in the single-server setting. In the first phase, we focus on basic support for [arbitrary secrets](#arbitrary-secrets-poc). In the second phase, we extend the system to support [signing keys](#signing-keys).
+We are iteratively developing a proof of concept in the single-server setting. In the first phase, we focus on basic support for [arbitrary secrets](#arbitrary-secrets). In the second phase, we extend the system to support [signing keys](#signing-keys).
 
 ## Page Contents
-1. [Arbitrary Secrets](#arbitrary-secrets-poc)<br>
+1. [Arbitrary Secrets](#arbitrary-secrets)<br>
 1. [Signing Keys](#signing-keys) <br>
 
 ### Arbitrary Secrets 
