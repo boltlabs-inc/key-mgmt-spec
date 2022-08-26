@@ -98,7 +98,7 @@ Output:
 Protocol:
 1. The client:
    1. [Opens a request session](systems-architecture.md#request-session) for the given credentials `user_credentials`. The client receives as output an open secure channel and a user identifier `user_id`.
-   1. Calls [`retrieve_storage_key`](#retrievestoragekey-functionality), the output of which is `storage_key`.
+   1. Calls [`retrieve_storage_key`](#retrieve_storage_key-protocol), the output of which is `storage_key`.
    1. Sends a request message to the key server over the session's secure channel. This message MUST indicate the desire to store a secret remotely and contain `user_id`.
 1. The key server:
    1. Runs a validity check on the received request and `user_id`(i.e., there must be a valid open request session, the request must conform to the expected format, and `user_id` must be of the expected format and length, and should match that of the open request session). If this check fails, the server MUST reject the request.
@@ -143,7 +143,7 @@ Output:
 Protocol:
 1. The client:
    1. [Opens a request session](systems-architecture.md#request-session) for the given credentials `user_credentials`. The client receives as output an open secure channel and a user identifier `user_id`.
-   1. Calls [`retrieve_storage_key`](#retrievestoragekey-functionality), the output of which is `storage_key`. The implementation SHOULD keep this key in memory only and not write to disk.
+   1. Calls [`retrieve_storage_key`](#retrieve_storage_key-protocol), the output of which is `storage_key`. The implementation SHOULD keep this key in memory only and not write to disk.
    1. [Retrieves](#client-side-storage) the ciphertext `ciphertext` associated to `key_id` and the associated data `associated_data` from local storage. 
         1. If successful, computes `arbitrary_key = Dec(storage_key, ciphertext, associated_data)`, outputs `arbitrary_key`, and closes the request session. 
         1. Otherwise, continues.
@@ -200,7 +200,7 @@ Output:
 Protocol:
 1. The client:
    1. [Opens a request session](systems-architecture.md#request-session) for the given credentials `user_credentials`. The client receives as output an open secure channel and a user identifier `user_id`.
-   1. Calls [`retrieve_storage_key`](#retrievestoragekey-functionality), the output of which is `storage_key`.
+   1. Calls [`retrieve_storage_key`](#retrieve_storage_key-protocol), the output of which is `storage_key`.
    1. Sends a request message to the key server over the session's secure channel. This message MUST indicate the desire to store an imported secret remotely and contain `user_id`.
 1. The key server:
    1. Runs a validity check on the received request and `user_id` (i.e., there must be a valid open request session, the request must conform to the expected format, and `user_id` must be of the expected format and length, and should match that of the open request session). If this check fails, the server MUST reject the request.
@@ -298,7 +298,7 @@ Protocol:
     1. Deletes `master_key` from memory.
     1. Outputs `storage_key`.
 
-Usage guidance: Code that calls the `retrieve_storage_key` functionality SHOULD NOT write the output `storage_key` to disk and should make a best effort to drop this key from temporary memory after use of this key is completed.
+Usage guidance: Code that calls the `retrieve_storage_key` protocol SHOULD NOT write the output `storage_key` to disk and should make a best effort to drop this key from temporary memory after use of this key is completed.
 
 #### Client-side storage
 
