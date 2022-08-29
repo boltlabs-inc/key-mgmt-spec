@@ -9,6 +9,7 @@ This page contains protocol descriptions for Lock Keeper system functionalities.
     1. [Retrieve a Secret](#retrieve-a-secret) <br>
     1. [Import a Secret](#import-a-secret) <br>
     1. [Cryptographic and Supporting Dependencies](#cryptographic-and-supporting-operations) <br>
+1. [Operations on Signing Keys](#operations-on-signing-keys) <br>
 
 ## Register
 An asset owner that has not previously interacted with the key server MUST register. Registration proceeds as follows:
@@ -265,6 +266,15 @@ Protocol:
     1. Outputs `key_id` to the calling application.
 
 Non-normative note: The additional context `"imported key"` provides assurance and usage information for the asset owner and does not provide any additional assurance for the key server. That is, the asset owner, even after recovering from a lost device, is still able to retrieve and leverage this contextual information in deciding how to use the given secret.
+
+## Operations on Signing Keys
+
+### Generate and Store a Signing Key
+The protocols are identical to [the generation protocols for arbitrary secrets](#generate-and-store-a-secret). The only difference is the type of key created. That is, calling this functionality should allow the asset owner to create one of the following ECDSA key types:
+- ECDSA on secp256 curve; or
+- EdDSA on ed25519.
+
+Implementation guidance: We pick these parameters in order to provide functionality compatible with EVM-based blockchains. However, we expect to support multiple blockchains and signing primitives in the future.
 
 ### Cryptographic and Supporting Operations
 #### External dependencies
