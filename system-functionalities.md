@@ -126,11 +126,11 @@ Protocol:
    1. Sends `key_id` to the client over the secure channel.
 1. The client:
     1. Runs the [generate](#generate-a-secret) protocol on input `(32, rng, user_id||key_id)` to get a secret `arbitrary_key`.
-    1. Computes `Enc(storage_key, arbitrary_key, user_id||key_id)` and sends the resulting ciphertext to the key server over the secure channel.
-    1. [Stores](#client-side-storage) the ciphertext and associated data `user_id||key_id` locally.
+    1. Computes `ciphertext = Enc(storage_key, arbitrary_key, user_id||key_id)` and sends `ciphertext` to the key server over the secure channel.
+    1. [Stores](#client-side-storage) `arbitrary_key`and associated data `user_id||key_id` locally.
 1. The key server:
-    1. Runs a validity check on the received ciphertext (i.e., the ciphertext must be of the expected format and length).
-    1. [Stores](#server-side-storage) a tuple containing the received ciphertext, `user_id`, and `key_id` in the server database.
+    1. Runs a validity check on , `ciphertext` (i.e., the ciphertext must be of the expected format and length).
+    1. [Stores](#server-side-storage) a tuple containing `ciphertext`, `user_id`, and `key_id` in the server database.
     1. Stores the current request information, including the outcome of the validity check, in an [audit log](#audit-logs) associated with the given user.    
     1. Sends an ACK to the client.
     1. Outputs a success indicator.
@@ -440,15 +440,16 @@ Usage guidance: Code that calls the `retrieve_storage_key` protocol SHOULD NOT w
 
 #### Client-side storage
 
-For now, simple clear-text storage is acceptable.
-- [TODO #39](https://github.com/boltlabs-inc/key-mgmt-spec/issues/39): Include appropriate requirements for client-side secure storage and generate relevant issues in key-mgmt.
+For now, in the PoC setting, simple clear-text storage is acceptable. 
+- [TODO #39](https://github.com/boltlabs-inc/key-mgmt-spec/issues/39): Include appropriate requirements for client-side secure storage and generate relevant issues in key-mgmt:
+    -  The client library MUST encrypt all data stored locally under a key that the user can access without contacting the key server. 
 
 #### Server-side storage
 - [TODO #28](https://github.com/boltlabs-inc/key-mgmt-spec/issues/28). Include appropriate requirements for server-side secure storage and generate relevant issues in key-mgmt.
-- All data stored by the server MUST be encrypted by a key known only to the server.
-- System requirements may change to include the usage of secure enclaves, in which case, the encryption key MUST be known only to the enclave.
+    - All data stored by the server MUST be encrypted by a key known only to the server.
+    - System requirements may change to include the usage of secure enclaves, in which case, the encryption key MUST be known only to the enclave.
 
-##### Audit Logs
+#### Audit Logs
 The server storage should include a per-user audit log that tracks system registration and logins, key use requests, and audit log requests. A single log entry contains the following information about each action: action, actor, date, outcome (e.g. success or failure), any related key identifier.
 
 
