@@ -320,6 +320,45 @@ Signing keys have an additional supported operation, namely, the creation of a s
 
 Implementation guidance: We pick these ECDSA/EdDSA parameters in order to provide functionality compatible with EVM-based blockchains. However, we expect to support multiple blockchains and signing primitives in the future.
 
+### Sign a Message
+#### Local signing
+If the signing key is stored locally, the client retrieves and signs the message client-side.
+
+#### Remote signing
+This client-initiated functionality sends a request to the key server to generate and store a secret remotely.
+
+Input:
+- Client input:
+    - `user_credentials`, which consists of credentials for use in opening [authenticated sessions](systems-architecture.md#networking).
+        - `account_name`, bytes that represent the asset owner's human-memorable account information, e.g., email address; and
+        - `password`, bytes that represent the asset owner's human-memorable secret authentication information.
+    -  `key_id`, a 128-bit unique identifier representing a signing key.
+    - `message`, a message to be signed.
+- Server input: none.
+
+Output:
+- Client output:
+    - A signature.
+- Server output:
+    - A success indicator
+
+Protocol:
+1. The client:
+    1. [Opens a request session](systems-architecture.md#request-session) for the given credentials `user_credentials`. The client receives as output an open secure channel and a user identifier `user_id`.
+    1. Sends a request message to the key server over the session's secure channel. This message MUST indicate the request to create a signaature, and contain `message`, `key_id`, and `user_id`.
+1. The key server:
+    1. Runs a validity check on the received request, `key_id`, `message`, and `user_id`; if this check fails, the server MUST reject the request:
+        - The request must conform to the expected format and content, e.g.
+            - `message` should have the expected domain and format for the signing key type,
+            - `user_id` must be of the expected format and length, and should match that of the open request session in which the request was sent. 
+        - The `key_id` must be a key created for the user with the given `user_id`.
+    1. Computes `signature`, the signature on `message` and sends `signature` to the client.
+    1. Stores the current request information, including the outcome of the validity check, in an [audit log](#audit-logs) associated with the given user.    
+    1. Outputs a success indicator.
+1. The client:
+    1. Closes the session.
+    1. Outputs `signature` to the calling application.
+
 ## Cryptographic and Supporting Operations
 #### External dependencies
 See [the current development phase](current-development-phase.md#cryptographic-protocol-and-implementation-dependencies) for our selections. Dependencies include:
