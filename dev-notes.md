@@ -17,7 +17,10 @@ Basic support for arbitrary secrets includes:
 - Exporting a key from the system; and
 - Obtaining an audit log of the asset owner's system and key use activity.
 
-As part of completion of this phase, we are implementing a working command-line demo with cryptography for handling arbitrary secrets. 
+As part of completion of our first development phase, we are implementing a working command-line demo with cryptography for handling arbitrary secrets for the above workflows. 
+
+Extended support for arbitrary secrets includes:
+- Remote-only generation and storage of secrets, where the secret is generated and stored entirely at the key server.
 
 For more details on the above, see [Arbitrary Secrets Overview](arbitrary-secrets-overview.md).
 

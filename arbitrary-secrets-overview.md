@@ -35,14 +35,20 @@ See the [Networking subsection](systems-architecture.md#networking) on the [Syst
 ### Operations on arbitrary secrets
 See the [Operations on Arbitrary Secrets page](cryptographic_flows.md#) for details.
 
-1. The asset owner can _generate_ a secret locally.
-    1. This secret MUST be randomly generated according to the uniform distribution.
-    1. This secret should default to 256-bits.
-1. The asset owner can _store_ a secret. By default the secret is stored both locally and at the key server.
+1. The asset owner can _generate_ secrets. Generation of secrets may be _local_ or _remote_:
+    1. The asset owner can generate a secret locally, i.e, using the client.
+        1. This secret MUST be randomly generated according to the uniform distribution.
+        1. This secret should default to 256-bits.
+    1. The asset owner can request the key server to generate a secret remotely.
+        1. This secret MUST be randomly generated according to the uniform distribution.
+        1. This secret should default to 256-bits.
+1. The asset owner can _store_ a secret. 
+    1. If the secret is generated locally, then the secret is by default stored both locally and at the key server.
+    1. If the secret is generated remotely, then the secret is by default stored only at the key server.
     1. Storage on a key server MUST occur via a mutually authenticated channel that satisfies confidentiality and integrity. 
     1. Local storage on the user's device should be secure.
     1. An additional functionality that allows the user to store secrets on the remote key server only WILL be added in the future.
-    1. An additional functionality that allows the user to store secrets on the local device only may be added in the future. and on the remote key server only may be added in the future.
+    1. An additional functionality that allows the user to store secrets on the local device only may be added in the future. 
 1. The asset owner can _retrieve_ a secret from the key server. 
     1. Retrieval from a key server MUST occur via a mutually authenticated channel that satisfies confidentiality and integrity. 
     1. The key retrieved MUST be a key associated to the authenticated user.
