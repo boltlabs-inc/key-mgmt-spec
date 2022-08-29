@@ -6,7 +6,7 @@ Our libraries exist in the [`key-mgmt`](https://github.com/boltlabs-inc/key-mgmt
 - [`key-server`](https://github.com/boltlabs-inc/key-mgmt/tree/develop/dams-key-server): This binary can be integrated into a host server in order to provide end-to-end encrypted storage of secrets. See [here](systems-architecture.md#key_server) for more details.
 
 ## Demo Repository
-We will add a link to a repository that demonstrates usage of the `local-client` and `key-server` libraries.<br>
+We will add a link to a repository that demonstrates usage of the `client` and `key-server` libraries.<br>
 - [TODO #93](https://github.com/boltlabs-inc/key-mgmt/issues/93) Add link to location above.
 
 This demo contains two parts:
