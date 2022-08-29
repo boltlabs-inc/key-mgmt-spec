@@ -232,7 +232,13 @@ Non-normative notes:
     - The context `NULL` is for internal testing and system extensibility purposes and does not currently provide a function for the asset owner.
 
 ### Import a Secret
+There are two ways to import a secret into the system, depending on whether or not the asset owners wishes to keep a copy of the key in local storage.
 
+Usage guidance: We do not recommend using imported keys for high-risk applications.An imported key may have been compromised prior to import.
+
+Non-normative note: In the following two protocols, the additional context `"imported key"` provides assurance and usage information for the asset owner and does not provide any additional assurance for the key server. That is, the asset owner, even after recovering from a lost device, is still able to retrieve and leverage this contextual information in deciding how to use the given secret.
+
+#### Local import with remote backup
 This functionality allows an asset owner to _import_ a secret to the system. The imported secret is stored both locally and remotely at the key server.
 
 Input:
@@ -271,17 +277,48 @@ Protocol:
     1. Closes the session.
     1. Outputs `key_id` to the calling application.
 
-Non-normative note: The additional context `"imported key"` provides assurance and usage information for the asset owner and does not provide any additional assurance for the key server. That is, the asset owner, even after recovering from a lost device, is still able to retrieve and leverage this contextual information in deciding how to use the given secret.
+#### Import to key server only
+This functionality allows an asset owner to _import_ a secret to the system and store this secret only at the key server. The imported secret is _not_ stored locally when this functionality is called.
+
+Input:
+- Client input:
+    - `user_credentials`, which consists of credentials for use in opening [authenticated sessions](systems-architecture.md#networking).
+        - `account_name`, bytes that represent the asset owner's human-memorable account information, e.g., email address; and
+        - `password`, bytes that represent the asset owner's human-memorable secret authentication information.
+    - `secret`, the secret that is being imported, which is of the form ``len || secret_material``, where `len` is 1 byte that represents the length of the secret material `secret_material` in bytes.
+- Server input: none.
+
+Output:
+- Client output:
+    - `key_id`, a 128-bit unique identifier representing a key, computed as the (possibly truncated) output of `Hash` over user and scheme parameters and a randomly generated salt.
+- Server output:
+    - A success indicator.
+
+Protocol:
+1. The client:
+   1. [Opens a request session](systems-architecture.md#request-session) for the given credentials `user_credentials`. The client receives as output an open secure channel and a user identifier `user_id`.
+   1. Sends a request message to the key server over the session's secure channel. This message MUST indicate the desire to store an imported secret remotely and contain both `secret` and `user_id`.
+1. The key server:
+   1. Runs a validity check on the received request and `user_id` (i.e., there must be a valid open request session, the request must conform to the expected format, and `user_id` must be of the expected format and length, and should match that of the open request session). If this check fails, the server MUST reject the request.
+   1. Runs the [generate a key identifier](#generate-a-key-identifier) subprotocol, the output of which is a globally unique identifier `key_id`. 
+   1. [Stores](#server-side-storage) a tuple containing `secret`, `user_id`, and `key_id` in the server database.
+   1. Sends `key_id` to the client over the secure channel.
+   1. [Stores](#server-side-storage) the current request information, including the outcome of the validity check, in an [audit log](#audit-logs) associated with the given user.    
+   1. Outputs a success indicator.
+1. The client:
+    1. [Stores](#client-side-storage) the received `key_id` and associated context `"imported key"` locally.
+    1. Closes the session.
+    1. Outputs `key_id` to the calling application.
 
 ## Operations on Signing Keys
 
-All of the [protocols for arbitrary secrets](#operations-on-arbitrary-secrets) should be supported. The only difference is the type of key created and used. That is, calling the generation functionality should allow the asset owner to create one of the following ECDSA key types:
+All of the [protocols for arbitrary secrets](#operations-on-arbitrary-secrets) should be supported. The only difference is the type of key created and used. That is, calling the generation functionality should allow the asset owner to create one of the following key types:
 - ECDSA on secp256 curve; or
 - EdDSA on ed25519.
 
 Signing keys have an additional supported operation, namely, the creation of a signature.
 
-Implementation guidance: We pick these parameters in order to provide functionality compatible with EVM-based blockchains. However, we expect to support multiple blockchains and signing primitives in the future.
+Implementation guidance: We pick these ECDSA/EdDSA parameters in order to provide functionality compatible with EVM-based blockchains. However, we expect to support multiple blockchains and signing primitives in the future.
 
 ## Cryptographic and Supporting Operations
 #### External dependencies
