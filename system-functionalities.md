@@ -1,6 +1,14 @@
-
 # System Functionalities
-Lock Keeper system functionalities are comprised of the following:
+This page contains protocol descriptions for Lock Keeper system functionalities.
+
+## Contents
+1. [Register](#register) <br>
+1. [Retrieve Audit Logs](#retrieve-audit-logs) <br>
+1. [Operations on Arbitrary Secrets](#operations-on-arbitrary-secrets) <br>
+    1. [Generate and Store a Secret](#generate-and-store-a-secret) <br>
+    1. [Retrieve a Secret](#retrieve-a-secret) <br>
+    1. [Import a Secret](#import-a-secret) <br>
+    1. [Cryptographic and Supporting Dependencies](#cryptographic-and-supporting-operations) <br>
 
 ## Register
 An asset owner that has not previously interacted with the key server MUST register. Registration proceeds as follows:
@@ -80,6 +88,11 @@ Protocol:
 ### Generate and Store a Secret
 - [TODO #43](https://github.com/boltlabs-inc/key-mgmt-spec/issues/43): Determine failure and retry behavior for this protocol: what is the client behavior after receipt of ACK?
 
+This client-initiated functionality allows for two ways of generating and storing a secret: 
+- local generation with remote backup; and
+- remote-only generation and storage.
+
+#### Local secret generation with remote backup
 This client-initiated functionality generates a secret locally and stores the result both locally and remotely.
 
 Input:
@@ -107,7 +120,7 @@ Protocol:
 1. The client:
     1. Runs the [generate](#generate-a-secret) protocol on input `(32, rng, user_id||key_id)` to get a secret `arbitrary_key`.
     1. Computes `Enc(storage_key, arbitrary_key, user_id||key_id)` and sends the resulting ciphertext to the key server over the secure channel.
-    1. [Stores](#store-a-secret-locally) the ciphertext and associated data `user_id||key_id` locally.
+    1. [Stores](#client-side-storage) the ciphertext and associated data `user_id||key_id` locally.
 1. The key server:
     1. Runs a validity check on the received ciphertext (i.e., the ciphertext must be of the expected format and length).
     1. [Stores](#server-side-storage) a tuple containing the received ciphertext, `user_id`, and `key_id` in the server database.
@@ -118,6 +131,38 @@ Protocol:
     1. Closes the session.
     1. Outputs `key_id` to the calling application.
 
+#### Remote-only secret generation and storage
+This client-initiated functionality sends a request to the key server to generate and store a secret remotely.
+
+Input:
+- Client input:
+    - `user_credentials`, which consists of credentials for use in opening [authenticated sessions](systems-architecture.md#networking).
+        - `account_name`, bytes that represent the asset owner's human-memorable account information, e.g., email address; and
+        - `password`, bytes that represent the asset owner's human-memorable secret authentication information.
+- Server input: none.
+
+Output:
+- Client output:
+    - `key_id`, a 128-bit unique identifier representing a secret, computed as the (possibly truncated) output of `Hash` over user and scheme parameters and a randomly generated salt.
+- Server output:
+    - A success indicator.
+
+Protocol:
+1. The client:
+    1. [Opens a request session](systems-architecture.md#request-session) for the given credentials `user_credentials`. The client receives as output an open secure channel and a user identifier `user_id`.
+    1. Sends a request message to the key server over the session's secure channel. This message MUST indicate the request to generate and store a secret remotely, and contain `user_id`.
+1. The key server:
+    1. Runs a validity check on the received request and `user_id`(i.e., there must be a valid open request session, the request must conform to the expected format, and `user_id` must be of the expected format and length, and should match that of the open request session). If this check fails, the server MUST reject the request.
+    1. Runs the [generate a key identifier](#generate-a-key-identifier) subprotocol, the output of which is a globally unique identifier `key_id`.
+    1. Runs the [generate](#generate-a-secret) protocol on input `(32, rng, user_id||key_id)` to get a secret `arbitrary_key`.
+    1. [Stores](#server-side-storage) a tuple containing `arbitrary_key`, `user_id`, and `key_id` in the server database.
+    1. Sends `key_id` to the client over the secure channel.
+    1. Stores the current request information, including the outcome of the validity check, in an [audit log](#audit-logs) associated with the given user.    
+    1. Outputs a success indicator.
+1. The client:
+    1. [Stores](#client-side-storage) the received `key_id` locally.
+    1. Closes the session.
+    1. Outputs `key_id` to the calling application.
 
 ### Retrieve a Secret 
 This client-initiated functionality retrieves a secret from the system and passes use-specific information to the calling application.
@@ -208,7 +253,7 @@ Protocol:
    1. Sends `key_id` to the client over the secure channel.
 1. The client:
     1. Computes `Enc(storage_key, secret, user_id||key_id||"imported key")` and sends the resulting ciphertext to the key server over the secure channel.
-    1. [Stores](#store-a-secret-locally) the ciphertext and associated data `user_id||key_id||"imported key"` locally.
+    1. [Stores](#client-side-storage) the ciphertext and associated data `user_id||key_id||"imported key"` locally.
 1. The key server:
     1. Runs a validity check on the received ciphertext (i.e., the ciphertext must be of the expected format and length).
     1. [Stores](#server-side-storage) a tuple containing the received ciphertext, and the associated data `user_id||key_id||"imported key"`in the server database.
@@ -307,6 +352,9 @@ For now, simple clear-text storage is acceptable.
 
 #### Server-side storage
 - [TODO #28](https://github.com/boltlabs-inc/key-mgmt-spec/issues/28). Include appropriate requirements for server-side secure storage and generate relevant issues in key-mgmt.
+- All data stored by the server MUST be encrypted by a key known only to the server.
+- System requirements may change to include the usage of secure enclaves, in which case, the encryption key MUST be known only to the enclave.
+
 ##### Audit Logs
 The server storage should include a per-user audit log that tracks system registration and logins, key use requests, and audit log requests. A single log entry contains the following information about each action: action, actor, date, outcome (e.g. success or failure), any related key identifier.
 
