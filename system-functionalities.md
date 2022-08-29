@@ -99,8 +99,8 @@ This client-initiated functionality allows for two ways of generating and storin
 - local generation with remote backup; and
 - remote-only generation and storage.
 
-#### Local secret generation with remote backup
-This client-initiated functionality generates a secret locally and stores the result both locally and remotely.
+#### Local secret generation with remote encrypted backup
+This client-initiated functionality generates a secret locally and stores the result both locally and remotely. The key server does NOT get access to the secret material generated during this protocol.
 
 Input:
 - Client input:
@@ -139,7 +139,7 @@ Protocol:
     1. Outputs `key_id` to the calling application.
 
 #### Remote-only secret generation and storage
-This client-initiated functionality sends a request to the key server to generate and store a secret remotely.
+This client-initiated functionality sends a request to the key server to generate and store a secret remotely. The key server DOES have access to the secret material generated during this protocol.
 
 Input:
 - Client input:
@@ -314,7 +314,7 @@ Protocol:
 
 All of the [protocols for arbitrary secrets](#operations-on-arbitrary-secrets) should be supported. The only difference is the type of key created and used. That is, calling the generation functionality should allow the asset owner to create one of the following key types:
 - ECDSA on secp256 curve; or
-- EdDSA on ed25519.
+- Ed25519 (i.e., EdDSA on edwards25519).
 
 Signing keys have an additional supported operation, namely, the creation of a signature.
 
@@ -352,7 +352,7 @@ Protocol:
             - `message` should have the expected domain and format for the signing key type,
             - `user_id` must be of the expected format and length, and should match that of the open request session in which the request was sent. 
         - The `key_id` must be a key created for the user with the given `user_id`.
-    1. Computes `signature`, the signature on `message` and sends `signature` to the client.
+    1. Computes `signature`, the signature on `message`, and sends `signature` to the client.
     1. Stores the current request information, including the outcome of the validity check, in an [audit log](#audit-logs) associated with the given user.    
     1. Outputs a success indicator.
 1. The client:
@@ -369,8 +369,10 @@ See [the current development phase](current-development-phase.md#cryptographic-p
     - An encryption function `Enc` that takes a pair `(key, msg, data)`, where `key` is the symmetric key, `msg` is the message to be encrypted, and `data` is OPTIONAL associated data, and outputs a ciphertext.
     - A decryption function `Dec` that takes a pair `(key, ciphertext, data)`, where `key` is the symmetric key,`ciphertext` is the a ciphertext to be decrypted, and `data` is OPTIONAL associated data, and outputs a plaintext.
 - [A key derivation function (KDF)] that takes a tuple `(input_key, context, len)`, where `input_key` is the input key material, `context` is an optional context and application-specific information, and `len` is the length of the output keying material in bytes.
+- Cryptographic signing primitives:
+    - ECDSA on secp256
+    - Ed25519 (i.e., EdDSA on edwards25519).
    
-
 Inter-dependency constraints include:
 - The length of the a key for `Enc` must be no more than 255 times the length of the output of `Hash`.
 
