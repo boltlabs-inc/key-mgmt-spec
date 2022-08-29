@@ -266,7 +266,7 @@ Protocol:
    1. Sends `key_id` to the client over the secure channel.
 1. The client:
     1. Computes `Enc(storage_key, secret, user_id||key_id||"imported key")` and sends the resulting ciphertext to the key server over the secure channel.
-    1. [Stores](#client-side-storage) the ciphertext and associated data `user_id||key_id||"imported key"` locally.
+    1. [Stores](#client-side-storage) `secret` and associated data `user_id||key_id||"imported key"` locally.
 1. The key server:
     1. Runs a validity check on the received ciphertext (i.e., the ciphertext must be of the expected format and length).
     1. [Stores](#server-side-storage) a tuple containing the received ciphertext, and the associated data `user_id||key_id||"imported key"`in the server database.
@@ -341,7 +341,7 @@ Output:
 - Client output:
     - A signature.
 - Server output:
-    - A success indicator
+    - A success indicator.
 
 Protocol:
 1. The client:
