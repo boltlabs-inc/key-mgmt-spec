@@ -323,6 +323,7 @@ Implementation guidance: We pick these ECDSA/EdDSA parameters in order to provid
 ### Sign a Message
 #### Local signing
 If the signing key is stored locally, the client retrieves and signs the message client-side.
+    - [TODO #116](https://github.com/boltlabs-inc/key-mgmt-spec/issues/116).
 
 #### Remote signing
 This client-initiated functionality sends a request to the key server to generate and store a secret remotely.
