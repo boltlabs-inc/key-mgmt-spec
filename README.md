@@ -10,7 +10,7 @@ This repository holds the current design specification for [Lock Keeper](https:/
 1. [Stakeholders and System Goals](stakeholders-and-goals.md)<br>
 1. [Development Notes](dev-notes.md) <br>
 1. [System Architecture](systems-architecture.md)<br>
-1. [System Functionality](cryptographic_flows.md)<br>
+1. [System Functionality](system-functionalities.md)<br>
 1. [Where to Find Code](repository-list.md)<br>
 1. [Glossary](glossary.md)
 
@@ -54,11 +54,14 @@ We want this repository to be a helpful reference for the following groups:
 ### In Scope
 Here is a working list of what should be included in this repository:
 - Overviews of what the product is expected to accomplish in our current and near-term [development notes](dev-notes.md). Because we are designing and implementing the product iteratively, expect ongoing updates. Currently this includes:
-    - [Arbitrary Secrets Overview](arbitrary-secrets-overview.md)
+    - [Arbitrary Secrets Overview](arbitrary-secrets-overview.md).
 - Integration guidance for developers, including any requirements or assumptions for the calling application(s) and how the calling application(s) fits in the overall system architecture, i.e., which components are external-facing. This will be helpful for iterating on our external-facing APIs and overall system functionality.
 - A specification of our [threat model and desired system security and privacy properties](design-philosophy-and-threat-model.md).
+- A description of relevant [stakeholders](stakeholders-and-goals.md).
 - A specification of the [system architecture](systems-architecture.md), including application-layer session handling and assumptions on the underlying transport layer. This will be helpful for design iteration, analysis, audits, and obtaining feedback from the community.
 - A specification of [system functionalities](system-functionalities.md). This includes a description of underlying cryptographic assumptions and desired properties. This will be helpful for design iteration, analysis, audits, and obtaining feedback from the community.
+- A [guide to the implementation codebases](repository-list.md).
+- A [glossary](glossary.md) of terms used throughout the specification.
 
 ### Out of Scope
 We do not attempt to capture granular, non-cryptographic implementation and software architecture decisions. This type of development decision should be documented clearly in [Lock Keeper](https://github.com/boltlabs-inc/key-mgmt).
