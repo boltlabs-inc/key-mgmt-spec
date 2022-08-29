@@ -8,8 +8,14 @@ This page contains protocol descriptions for Lock Keeper system functionalities.
     1. [Generate and Store a Secret](#generate-and-store-a-secret) <br>
     1. [Retrieve a Secret](#retrieve-a-secret) <br>
     1. [Import a Secret](#import-a-secret) <br>
-    1. [Cryptographic and Supporting Dependencies](#cryptographic-and-supporting-operations) <br>
 1. [Operations on Signing Keys](#operations-on-signing-keys) <br>
+1. [Cryptographic and Supporting Dependencies](#cryptographic-and-supporting-operations) <br>
+    1. [External Dependencies](#external-dependencies) <br>
+    1. [Generate a Secret Helper](#generate-a-secret) <br>
+    1. [Generate a Key Identifier](#generate-a-key-identifier) <br>
+    1. [`retrieve_storage_key` protocol](#retrieve_storage_key-protocol) <br>
+    1. [Client-side storage](#client-side-storage) <br>
+    1. [Server-side storage](#server-side-storage) <br>
 
 ## Register
 An asset owner that has not previously interacted with the key server MUST register. Registration proceeds as follows:
@@ -269,14 +275,15 @@ Non-normative note: The additional context `"imported key"` provides assurance a
 
 ## Operations on Signing Keys
 
-### Generate and Store a Signing Key
-The protocols are identical to [the generation protocols for arbitrary secrets](#generate-and-store-a-secret). The only difference is the type of key created. That is, calling this functionality should allow the asset owner to create one of the following ECDSA key types:
+All of the [protocols for arbitrary secrets](#operations-on-arbitrary-secrets) should be supported. The only difference is the type of key created and used. That is, calling the generation functionality should allow the asset owner to create one of the following ECDSA key types:
 - ECDSA on secp256 curve; or
 - EdDSA on ed25519.
 
+Signing keys have an additional supported operation, namely, the creation of a signature.
+
 Implementation guidance: We pick these parameters in order to provide functionality compatible with EVM-based blockchains. However, we expect to support multiple blockchains and signing primitives in the future.
 
-### Cryptographic and Supporting Operations
+## Cryptographic and Supporting Operations
 #### External dependencies
 See [the current development phase](current-development-phase.md#cryptographic-protocol-and-implementation-dependencies) for our selections. Dependencies include:
 
@@ -291,7 +298,7 @@ See [the current development phase](current-development-phase.md#cryptographic-p
 Inter-dependency constraints include:
 - The length of the a key for `Enc` must be no more than 255 times the length of the output of `Hash`.
 
-#### Generate a secret 
+#### Generate a secret helper
 Input:
   - A length `len` in bytes. Default length is 32 bytes.
   - A seeded CSPRNG `rng`.
