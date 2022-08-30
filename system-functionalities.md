@@ -130,12 +130,12 @@ Protocol:
    1. Runs the [Generate a key identifier](#generate-a-key-identifier) subprotocol, the output of which is a globally unique identifier `key_id`.
    1. Sends `key_id` to the client over the secure channel.
 1. The client:
-    1. Runs the [generate](#generate-a-secret) protocol on input `(32, rng, user_id||key_id)` to get a secret `arbitrary_key`.
-    1. Computes `ciphertext = Enc(storage_key, arbitrary_key, user_id||key_id)` and sends `ciphertext` to the key server over the secure channel.
-    1. [Stores](#client-side-storage) `arbitrary_key`and associated data `user_id||key_id` locally.
+    1. Runs the [generate](#generate-a-secret) protocol on input `(32, rng, user_id||key_id||"client-generated")` to get a secret `arbitrary_key`.
+    1. Computes `ciphertext = Enc(storage_key, arbitrary_key, user_id||key_id||"client-generated")` and sends `ciphertext` to the key server over the secure channel.
+    1. [Stores](#client-side-storage) `arbitrary_key`and associated data `user_id||key_id"||"client-generated"` locally.
 1. The key server:
     1. Runs a validity check on , `ciphertext` (i.e., the ciphertext must be of the expected format and length).
-    1. [Stores](#server-side-storage) a tuple containing `ciphertext`, `user_id`, and `key_id` in the server database.
+    1. [Stores](#server-side-storage) a tuple containing `ciphertext` and associated data `user_id||key_id||"client-generated"` in the server database.
     1. Stores the current request information, including the outcome of the validity check, in an [audit log](#audit-logs) associated with the given user.    
     1. Sends an ACK to the client.
     1. Outputs a success indicator.
@@ -169,8 +169,8 @@ Protocol:
 1. The key server:
     1. Runs a validity check on the received request and `user_id`(i.e., there must be a valid open request session, the request must conform to the expected format, and `user_id` must be of the expected format and length, and should match that of the open request session). If this check fails, the server MUST reject the request.
     1. Runs the [generate a key identifier](#generate-a-key-identifier) subprotocol, the output of which is a globally unique identifier `key_id`.
-    1. Runs the [generate](#generate-a-secret) protocol on input `(32, rng, user_id||key_id)` to get a secret `arbitrary_key`.
-    1. [Stores](#server-side-storage) a tuple containing `arbitrary_key`, `user_id`, and `key_id` in the server database.
+    1. Runs the [generate](#generate-a-secret) protocol on input `(32, rng, user_id||key_id||"server-generated")` to get a secret `arbitrary_key`.
+    1. [Stores](#server-side-storage) a tuple containing `arbitrary_key` and associated data `user_id`, and `key_id` in the server database.
     1. Sends `key_id` to the client over the secure channel.
     1. Stores the current request information, including the outcome of the validity check, in an [audit log](#audit-logs) associated with the given user.    
     1. Outputs a success indicator.
@@ -198,7 +198,7 @@ Input:
 
 Output:
 - Client output:
-    - Either a success indicator OR `arbitrary_key`, the arbitrary secret that is backed up remotely.
+    - Either a success indicator OR `arbitrary_key`, the arbitrary secret that is stored remotely.
 - Server output:
     - A success indicator.
 
@@ -206,10 +206,10 @@ Protocol:
 1. The client:
    1. [Opens a request session](systems-architecture.md#request-session) for the given credentials `user_credentials`. The client receives as output an open secure channel and a user identifier `user_id`.
    1. Calls [`retrieve_storage_key`](#retrieve_storage_key-protocol), the output of which is `storage_key`. The implementation SHOULD keep this key in memory only and not write to disk.
-   1. [Retrieves](#client-side-storage) the ciphertext `ciphertext` associated to `key_id` and the associated data `associated_data` from local storage. 
-        1. If successful, computes `arbitrary_key = Dec(storage_key, ciphertext, associated_data)`, outputs `arbitrary_key`, and closes the request session. 
+   1. [Retrieves](#client-side-storage) the secret `arbitrary_key` and the associated data `associated_data` associated to `key_id` from local storage. 
+        1. If successful, outputs `arbitrary_key` to the calling application, and closes the request session. 
         1. Otherwise, continues.
-   1. Sends a request message to the key server over the open session's secure channel. This message MUST indicate the desire to retrieve the backed up secret and contain `user_id` and `key_id`.
+   1. Sends a request message to the key server over the open session's secure channel. This message MUST indicate the desire to retrieve the remotely-stored secret and contain `user_id` and `key_id`.
 1. The key server:
     1. If the client closes the request session, outputs a success indicator and halts. Otherwise, continues.
     1. Runs a validity check on the received request, `user_id`, and `key_id`. If this check fails, the server MUST reject the request. The validation check includes the following:       
@@ -218,18 +218,17 @@ Protocol:
         1. The `user_id` must be of the expected format and length, and should match that of the open request session,
         1. The `key_id` must be associated with the given `user_id` in the key server's database.
         1. The intended use must match one of the expected options.
-    1. [Retrieves](#server-side-storage) the associated ciphertext, `ciphertext` and associated data, `associated_data`, for the given pair `(user_id, key_id)` from its database and sends `ciphertext` and `associated data` to the client.
+    1. [Retrieves](#server-side-storage) the record tuple `record` for the given pair `(user_id, key_id)` from its database, updates the database record to indicate that the secret has been retrieved by the client, and sends `record` to the client.
     1. Stores the current request information, including the outcome of the validity check, in an [audit log](#audit-logs) associated with the given user.  
     1. Outputs a success indicator.
 1. The client:
-    1. Computes `arbitrary_key = Dec(storage_key, ciphertext, associated_data)`, where `ciphertext` is the received ciphertext from the key server and `associated_data` is the associated data received from the server.
-    1. Deletes `storage_key` from memory.
+    1. If the received record `record` contains associated data `"client-generated"`, computes `arbitrary_key = Dec(storage_key, ciphertext, associated_data)`, where `ciphertext` is the received ciphertext from the key server and `associated_data` is the associated data received from the server. Otherwise, sets `arbitrary_key` to be the secret material in the tuple `record`.
+    1. Deletes `storage_key` from memory. 
     1. Closes the open request session.
-    1. [Stores](#client-side-storage) `ciphertext` in its local storage.
     1. If `context` is set to `NULL`, outputs a success indicator to the calling application and halts.
     1. Otherwise, 
         1. If `context` is set to `"local only"`, outputs `arbitrary_key` to the calling application.
-        1. If `context` is set to `"export"`, the client computes `exported key` as `len || secret`, as described above, and outputs `exported_key` to the calling application.
+        1. If `context` is set to `"export"`, the client computes `exported key` as `len || arbitrary_key`, as described above, and outputs `exported_key` to the calling application.
 
 Usage guidance: The calling application SHOULD support the intended use of the asset owner in as security conscious manner as possible. That is:
 - If the `context` is set to `"local only"`, the calling application SHOULD enable the asset owner to copy-paste the password to the system clipboard for one-time use and then makes a best effort to delete this secret from memory.
@@ -259,7 +258,7 @@ Input:
     - `user_credentials`, which consists of credentials for use in opening [authenticated sessions](systems-architecture.md#networking).
         - `account_name`, bytes that represent the asset owner's human-memorable account information, e.g., email address; and
         - `password`, bytes that represent the asset owner's human-memorable secret authentication information.
-    - `secret`, the secret that is being imported, which is of the form ``len || secret_material``, where `len` is 1 byte that represents the length of the secret material `secret_material` in bytes.
+    - `arbitrary_key`, the secret that is being imported, which is of the form ``len || secret_material``, where `len` is 1 byte that represents the length of the secret material `secret_material` in bytes.
 - Server input: none.
 
 Output:
@@ -279,7 +278,7 @@ Protocol:
    1. Sends `key_id` to the client over the secure channel.
 1. The client:
     1. Computes `Enc(storage_key, secret, user_id||key_id||"imported key")` and sends the resulting ciphertext to the key server over the secure channel.
-    1. [Stores](#client-side-storage) `secret` and associated data `user_id||key_id||"imported key"` locally.
+    1. [Stores](#client-side-storage) `arbitrary_key` and associated data `user_id||key_id||"imported key"` locally.
 1. The key server:
     1. Runs a validity check on the received ciphertext (i.e., the ciphertext must be of the expected format and length).
     1. [Stores](#server-side-storage) a tuple containing the received ciphertext, and the associated data `user_id||key_id||"imported key"`in the server database.
@@ -301,7 +300,7 @@ Input:
     - `user_credentials`, which consists of credentials for use in opening [authenticated sessions](systems-architecture.md#networking).
         - `account_name`, bytes that represent the asset owner's human-memorable account information, e.g., email address; and
         - `password`, bytes that represent the asset owner's human-memorable secret authentication information.
-    - `secret`, the secret that is being imported, which is of the form ``len || secret_material``, where `len` is 1 byte that represents the length of the secret material `secret_material` in bytes.
+    - `arbitrary_key`, the secret that is being imported, which is of the form ``len || secret_material``, where `len` is 1 byte that represents the length of the secret material `secret_material` in bytes.
 - Server input: none.
 
 Output:
@@ -313,11 +312,11 @@ Output:
 Protocol:
 1. The client:
    1. [Opens a request session](systems-architecture.md#request-session) for the given credentials `user_credentials`. The client receives as output an open secure channel and a user identifier `user_id`.
-   1. Sends a request message to the key server over the session's secure channel. This message MUST indicate the desire to store an imported secret remotely and contain both `secret` and `user_id`.
+   1. Sends a request message to the key server over the session's secure channel. This message MUST indicate the desire to store an imported secret remotely and contain both `arbitrary_key` and `user_id`.
 1. The key server:
    1. Runs a validity check on the received request and `user_id` (i.e., there must be a valid open request session, the request must conform to the expected format, and `user_id` must be of the expected format and length, and should match that of the open request session). If this check fails, the server MUST reject the request.
    1. Runs the [generate a key identifier](#generate-a-key-identifier) subprotocol, the output of which is a globally unique identifier `key_id`. 
-   1. [Stores](#server-side-storage) a tuple containing `secret`, `user_id`, and `key_id` in the server database.
+   1. [Stores](#server-side-storage) a tuple containing `arbitrary_key` and associated data `user_id||key_id||"imported_key"` in the server database.
    1. Sends `key_id` to the client over the secure channel.
    1. [Stores](#server-side-storage) the current request information, including the outcome of the validity check, in an [audit log](#audit-logs) associated with the given user.    
    1. Outputs a success indicator.
