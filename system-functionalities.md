@@ -53,6 +53,8 @@ Output:
 1. The client and server close the session upon completion of the request.
 1. The client outputs a success indicator to the calling application.
 
+Implementation guidance: For security, all verification checks run by the key server MUST run in constant-time.
+
 ## Retrieve Audit Logs
 The asset owner can request audit logs from the key server.
 
@@ -90,6 +92,7 @@ Protocol:
     1. Closes the session.
     1. Outputs `summary_record` to the calling application.
 
+Implementation guidance: For security, all verification checks run by the key server MUST run in constant-time.
 
 ## Operations on Arbitrary Secrets
 ### Generate and Store a Secret
@@ -138,6 +141,9 @@ Protocol:
     1. Closes the session.
     1. Outputs `key_id` to the calling application.
 
+Implementation guidance: For security, all verification checks run by the key server MUST run in constant-time.
+
+
 #### Remote-only secret generation and storage
 This client-initiated functionality sends a request to the key server to generate and store a secret remotely. The key server DOES have access to the secret material generated during this protocol.
 
@@ -170,6 +176,8 @@ Protocol:
     1. [Stores](#client-side-storage) the received `key_id` locally.
     1. Closes the session.
     1. Outputs `key_id` to the calling application.
+
+Implementation guidance: For security, all verification checks run by the key server MUST run in constant-time.
 
 ### Retrieve a Secret 
 This client-initiated functionality retrieves a secret from the system and passes use-specific information to the calling application.
@@ -231,12 +239,15 @@ Non-normative notes:
     - The context `"export"` indicates that the secret material is meant to be passed to and out of the calling application, and persist _outside of the calling application_ itself. This is meant to capture uses like the asset owner creating an external backup of the system or as part of removing the secret from the key server entirely.
     - The context `NULL` is for internal testing and system extensibility purposes and does not currently provide a function for the asset owner.
 
+Implementation guidance: For security, all verification checks run by the key server MUST run in constant-time.
+
 ### Import a Secret
 There are two ways to import a secret into the system, depending on whether or not the asset owners wishes to keep a copy of the key in local storage.
 
 Usage guidance: We do not recommend using imported keys for high-risk applications.An imported key may have been compromised prior to import.
 
 Non-normative note: In the following two protocols, the additional context `"imported key"` provides assurance and usage information for the asset owner and does not provide any additional assurance for the key server. That is, the asset owner, even after recovering from a lost device, is still able to retrieve and leverage this contextual information in deciding how to use the given secret.
+
 
 #### Local import with remote backup
 This functionality allows an asset owner to _import_ a secret to the system. The imported secret is stored both locally and remotely at the key server.
@@ -277,6 +288,9 @@ Protocol:
     1. Closes the session.
     1. Outputs `key_id` to the calling application.
 
+Implementation guidance: For security, all verification checks run by the key server MUST run in constant-time.
+
+
 #### Import to key server only
 This functionality allows an asset owner to _import_ a secret to the system and store this secret only at the key server. The imported secret is _not_ stored locally when this functionality is called.
 
@@ -309,6 +323,9 @@ Protocol:
     1. [Stores](#client-side-storage) the received `key_id` and associated context `"imported key"` locally.
     1. Closes the session.
     1. Outputs `key_id` to the calling application.
+
+Implementation guidance: For security, all verification checks run by the key server MUST run in constant-time.
+
 
 ## Operations on Signing Keys
 
@@ -346,19 +363,24 @@ Output:
 Protocol:
 1. The client:
     1. [Opens a request session](systems-architecture.md#request-session) for the given credentials `user_credentials`. The client receives as output an open secure channel and a user identifier `user_id`.
-    1. Sends a request message to the key server over the session's secure channel. This message MUST indicate the request to create a signaature, and contain `message`, `key_id`, and `user_id`.
+    1. Sends a request message to the key server over the session's secure channel. This message MUST indicate the request to create a signature, and contain `message`, `key_id`, and `user_id`.
 1. The key server:
     1. Runs a validity check on the received request, `key_id`, `message`, and `user_id`; if this check fails, the server MUST reject the request:
-        - The request must conform to the expected format and content, e.g.
-            - `message` should have the expected domain and format for the signing key type,
+        - Checks that the request has the expected format and content, e.g.
+            - `message` should have the expected format and length.
             - `user_id` must be of the expected format and length, and should match that of the open request session in which the request was sent. 
-        - The `key_id` must be a key created for the user with the given `user_id`.
-    1. Computes `signature`, the signature on `message`, and sends `signature` to the client.
+        - Retrieves `KeyInfo` associated to `key_id` and checks that:
+            - The `key_id` must be an identifier for a key created for the user with the given `user_id`.
+            - `message` should have the expected domain for the signing key type.
+    1. Computes `signature`, a signature  on `message` in the scheme indicated by the signing type of the key with identifier `key_id`, and sends `signature` to the client.
     1. Stores the current request information, including the outcome of the validity check, in an [audit log](#audit-logs) associated with the given user.    
     1. Outputs a success indicator.
 1. The client:
     1. Closes the session.
     1. Outputs `signature` to the calling application.
+
+Implementation guidance: For security, all verification checks run by the key server MUST run in constant-time.
+
 
 ## Cryptographic and Supporting Operations
 #### External dependencies
@@ -439,7 +461,10 @@ Protocol:
     1. Deletes `master_key` from memory.
     1. Outputs `storage_key`.
 
+Implementation guidance: For security, all verification checks run by the key server MUST run in constant-time.
+
 Usage guidance: Code that calls the `retrieve_storage_key` protocol SHOULD NOT write the output `storage_key` to disk and should make a best effort to drop this key from temporary memory after use of this key is completed.
+
 
 #### Client-side storage
 

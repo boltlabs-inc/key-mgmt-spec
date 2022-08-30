@@ -29,6 +29,8 @@ We wish to ensure the following in our implementation:
     1. A _request session_: This type of session is opened when an asset owner who has previously registered with the system sends a request for the key sever to perform an operation on a secret (i.e., store, retrieve, audit, import, export).
         1. Request sessions MUST provide mutual entity authentication.
         1. Request sessions MUST provide confidentiality and integrity.
+1. For security, all verification checks run by the key server during session setup and resumption MUST run in constant-time.
+
 
 ### Underlying transport layer
 We assume a Public Key Infrastructure (PKI). For all session types, the local client first authenticates the key server and opens a channel using TLS 1.3.
@@ -91,6 +93,8 @@ Protocol:
 1. The key server sends `user_id` to the client over the authenticated channel.
 1. At this point, the registration session is considered _open_. 
 
+Implementation guidance: For security, all verification checks run by the key server MUST run in constant-time.
+
 #### Using a registration session
 We have the following requirements for using an open registration session:
     
@@ -99,6 +103,8 @@ We have the following requirements for using an open registration session:
 1. The only valid request for a registration session is a request to [complete registration](cryptographic_flows.md#complete-registration).
 1. The key server MUST close the session after completion of the complete registration request.
     - [TODO #51](https://github.com/boltlabs-inc/key-mgmt-spec/issues/51): Set recommendations for request limits and timeouts that allow more than one request per session.
+
+Implementation guidance: For security, all verification checks run by the key server MUST run in constant-time.
 
 ### Opening and using a request session
 The client initiates a request session as a prerequisite for processing any _requests_, i.e., operations that involve communication with the key server.
@@ -119,6 +125,9 @@ Protocol:
 1. The key server retrieves the identifier `user_id` associated with the authenticated client and sends `user_id` to the client over the authenticated channel.
 1. At this point, the request session is consider _open_. 
 
+Implementation guidance: For security, all verification checks run by the key server MUST run in constant-time.
+
+
 #### Using a request session
 We have the following requirements for using an open request session:
 1. All messages sent between the client and server MUST be over this authenticated channel, i.e., all messages should include an authentication tag that is computed under the selected MAC scheme using the shared key. 
@@ -126,3 +135,5 @@ We have the following requirements for using an open request session:
 1. The client may then send a single request (i.e., one of store, retrieve, audit, import, export) to the key server during this session.
 1. The key server MUST close the session upon completion of the given request.
     - [TODO #51](https://github.com/boltlabs-inc/key-mgmt-spec/issues/51): Set recommendations for request limits and timeouts that allow more than one request per session.
+
+Implementation guidance: For security, all verification checks run by the key server MUST run in constant-time.
