@@ -9,6 +9,8 @@ This page contains protocol descriptions for Lock Keeper system functionalities.
     1. [Retrieve a Secret](#retrieve-a-secret) <br>
     1. [Import a Secret](#import-a-secret) <br>
 1. [Operations on Signing Keys](#operations-on-signing-keys) <br>
+    1. [Inherited Operations](#inherited-operations) <br>
+    1. [Sign a Message](#sign-a-message) <br>
 1. [Cryptographic and Supporting Dependencies](#cryptographic-and-supporting-operations) <br>
     1. [External Dependencies](#external-dependencies) <br>
     1. [Generate a Secret Helper](#generate-a-secret) <br>
@@ -328,7 +330,9 @@ Implementation guidance: For security, all verification checks run by the key se
 
 
 ## Operations on Signing Keys
+The asset owner can create and use signing keys in a manner similar to arbitrary secrets, with the additional operation of creating signatures.
 
+### Inherited Operations
 All of the [protocols for arbitrary secrets](#operations-on-arbitrary-secrets) should be supported. The only difference is the type of key created and used. That is, calling the generation functionality should allow the asset owner to create one of the following key types:
 - ECDSA on secp256 curve; or
 - Ed25519 (i.e., EdDSA on edwards25519).
@@ -384,14 +388,14 @@ Implementation guidance: For security, all verification checks run by the key se
 
 ## Cryptographic and Supporting Operations
 #### External dependencies
-See [the current development phase](current-development-phase.md#cryptographic-protocol-and-implementation-dependencies) for our selections. Dependencies include:
+See [development notes](dev-notes.md#cryptographic-protocol-and-implementation-dependencies) for our selections. Dependencies include:
 
 - Cryptographic Hash Function `Hash`. 
 - CSPRNG, `rng`.
 - A symmetric AEAD scheme that consists of:
     - An encryption function `Enc` that takes a pair `(key, msg, data)`, where `key` is the symmetric key, `msg` is the message to be encrypted, and `data` is OPTIONAL associated data, and outputs a ciphertext.
     - A decryption function `Dec` that takes a pair `(key, ciphertext, data)`, where `key` is the symmetric key,`ciphertext` is the a ciphertext to be decrypted, and `data` is OPTIONAL associated data, and outputs a plaintext.
-- [A key derivation function (KDF)] that takes a tuple `(input_key, context, len)`, where `input_key` is the input key material, `context` is an optional context and application-specific information, and `len` is the length of the output keying material in bytes.
+- A key derivation function (KDF) that takes a tuple `(input_key, context, len)`, where `input_key` is the input key material, `context` is an optional context and application-specific information, and `len` is the length of the output keying material in bytes.
 - Cryptographic signing primitives:
     - ECDSA on secp256
     - Ed25519 (i.e., EdDSA on edwards25519).
