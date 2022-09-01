@@ -207,7 +207,10 @@ Protocol:
    1. [Opens a request session](systems-architecture.md#request-session) for the given credentials `user_credentials`. The client receives as output an open secure channel and a user identifier `user_id`.
    1. Calls [`retrieve_storage_key`](#retrieve_storage_key-protocol), the output of which is `storage_key`. The implementation SHOULD keep this key in memory only and not write to disk.
    1. [Retrieves](#client-side-storage) the secret `arbitrary_key` and the associated data `associated_data` associated to `key_id` from local storage. 
-        1. If successful, outputs `arbitrary_key` to the calling application, and closes the request session. 
+        1. If successful:
+            1. If `context` is set to `NULL`, outputs a success indicator to the calling application and halts.
+            1. If `context` is set to `"local only"`, outputs `arbitrary_key` to the calling application.
+            1. If `context` is set to `"export"`, the client computes `exported key` as `len || arbitrary_key`, as described above, and outputs `exported_key` to the calling application.
         1. Otherwise, continues.
    1. Sends a request message to the key server over the open session's secure channel. This message MUST indicate the desire to retrieve the remotely-stored secret and contain `user_id` and `key_id`.
 1. The key server:
