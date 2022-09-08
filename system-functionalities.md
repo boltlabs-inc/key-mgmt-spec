@@ -132,7 +132,10 @@ Protocol:
 1. The client:
     1. Runs the [generate](#generate-a-secret) protocol on input `(32, rng, user_id||key_id||"client-generated")` to get a secret `arbitrary_key`.
     1. Computes `ciphertext = Enc(storage_key, arbitrary_key, user_id||key_id||"client-generated")` and sends `ciphertext` to the key server over the secure channel.
-    1. [Stores](#client-side-storage) `arbitrary_key`and associated data `user_id||key_id"||"client-generated"` locally.
+    1. [Prepares to store](#client-side-storage) `arbitrary_key`and associated data `user_id||key_id"||"client-generated"` locally by creating a storage object to be returned to the calling application at the end of the protocol. This storage object, `StorageObject`, should contain `arbirary_key` and the associated data `user_id||key_id"||"client-generated"`.
+        - Implementation notes:
+            - This preparation step is a placeholder for future, non-trivial code. 
+            - The implementation should make a best effort to drop `arbitrary_key` from memory at this point.
 1. The key server:
     1. Runs a validity check on , `ciphertext` (i.e., the ciphertext must be of the expected format and length).
     1. [Stores](#server-side-storage) a tuple containing `ciphertext` and associated data `user_id||key_id||"client-generated"` in the server database.
@@ -141,7 +144,7 @@ Protocol:
     1. Outputs a success indicator.
 1. The client:
     1. Closes the session.
-    1. Outputs `key_id` to the calling application.
+    1. Outputs `key_id` and `StorageObject` to the calling application.
 
 Implementation guidance: For security, all verification checks run by the key server MUST run in constant-time.
 
