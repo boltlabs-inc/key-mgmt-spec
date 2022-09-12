@@ -34,6 +34,14 @@ There is metadata related the keys that the key server MUST track securely. The 
     - The type of account, i.e., the type of client used to register a user. The key server should be able to track, on a per-key basis, what type of account is associated.
     - The key identifier, key type, account mapping. 
 
+### Availability
+See the discussion on availability goals with respect to [network-level adversaries](design-philosophy-and-threat-model.md#passive-and-active-network-level-adversaries).
+- TODO: Record strategies we will integrate here.
+
+### Recovery
+
+In the near-term, we intend to incorporate an export functionality that allows for the export of signing keys from the system. This functionality may be used by the calling application to build various backup mechanisms, e.g., use of secure local storage on an iPhone or dedicated storage device. We will also explore support for social recovery mechanisms in the future.
+
 ## Secure Processors
 We intend to incorporate secure processors on the key server(s). Our end goal is that the [system functionalities](system-functionalities.md) and OPAQUE handshake are run in an enclave. Other non-core functionalities can be handled outside of the enclave. Additionally, we desire compatibility with multiple cloud providers and therefore multiple enclave technologies. 
 
