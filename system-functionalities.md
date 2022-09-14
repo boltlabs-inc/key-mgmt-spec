@@ -40,7 +40,7 @@ Output:
     1. Derives `master_key`, a symmetric key of length `len` bytes for [`Enc`](#external-dependencies), from  `export_key`, as follows:
         1. Length `len` should be the default for `Enc`.
         1. Set `master_key = KDF(export_key, "OPAQUE-derived Lock Keeper master key", len)`.
-    1. Runs the [generate protocol](cryptographic_flows.md#generate-a-secret) to get a symmetric key `storage_key` for [`Enc`](#external-dependencies) of length 32 bytes.
+    1. Creates a symmetric key `storage_key` for [`Enc`](#external-dependencies) by generating 32 bytes of randomess output from a seeded CSPRNG.
         - The `storage key` MUST NOT be saved, stored, or used in any context outside this protocol. It must not be passed to the calling application.
     1. Computes a ciphertext `encrypted_storage_key = Enc(master_key, storage_key, user_id||"storage key")`.
     1. <a name="complete-registration"></a> Sends a request message to the key server over the registration session's secure channel. This message MUST indicate the desire to _complete registration_ and contain `user_id` and the ciphertext `encrypted_storage_key`.
@@ -132,7 +132,7 @@ Protocol:
 1. The client:
     1. Runs the [generate](#generate-a-secret) protocol on input `(32, rng, user_id||key_id||"client-generated")` to get a secret `arbitrary_key`.
     1. Computes `ciphertext = Enc(storage_key, arbitrary_key, user_id||key_id||"client-generated")` and sends `ciphertext` to the key server over the secure channel.
-    1. [Prepares to store](#client-side-storage) `arbitrary_key`and associated data `user_id||key_id"||"client-generated"` locally by creating a storage object to be returned to the calling application at the end of the protocol. This storage object, `StorageObject`, should contain `arbirary_key` and the associated data `user_id||key_id"||"client-generated"`.
+    1. [Prepares to store](#client-side-storage) `arbitrary_key`and associated data `user_id||key_id||"client-generated"` locally by creating a storage object to be returned to the calling application at the end of the protocol. This storage object, `StorageObject`, should contain `arbirary_key` and the associated data `user_id||key_id||"client-generated"`.
         - Implementation notes:
             - This preparation step is a placeholder for future, non-trivial code. 
             - The implementation should make a best effort to drop `arbitrary_key` from memory at this point.
