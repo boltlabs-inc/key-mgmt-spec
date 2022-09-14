@@ -213,7 +213,7 @@ Protocol:
         1. If successful:
             1. If `context` is set to `NULL`, outputs a success indicator to the calling application and halts.
             1. If `context` is set to `"local only"`, outputs `arbitrary_key` to the calling application.
-            1. If `context` is set to `"export"`, the client computes `exported key` as `len || arbitrary_key`, as described above, and outputs `exported_key` to the calling application.
+            1. If `context` is set to `"export"`, the client computes `exported key` as `len || arbitrary_key || len_ad || associated_data`, where `len` is one byte describing the length of `arbitrary_key` in bytes, and `len_ad` is one byte describing the length of `associated_data` in bytes, and outputs `exported_key` to the calling application.
         1. Otherwise, continues.
    1. Sends a request message to the key server over the open session's secure channel. This message MUST indicate the desire to retrieve the remotely-stored secret and contain `user_id` and `key_id`.
 1. The key server:
@@ -234,7 +234,7 @@ Protocol:
     1. If `context` is set to `NULL`, outputs a success indicator to the calling application and halts.
     1. Otherwise, 
         1. If `context` is set to `"local only"`, outputs `arbitrary_key` to the calling application.
-        1. If `context` is set to `"export"`, the client computes `exported key` as `len || arbitrary_key`, as described above, and outputs `exported_key` to the calling application.
+        1. If `context` is set to `"export"`, the client computes `exported key` as `len || arbitrary_key || len_ad || associated_data`, where `len` is one byte describing the length of `arbitrary_key` in bytes, and `len_ad` is one byte describing the length of `associated_data` in bytes, and outputs `exported_key` to the calling application.
 
 Usage guidance: The calling application SHOULD support the intended use of the asset owner in as security conscious manner as possible. That is:
 - If the `context` is set to `"local only"`, the calling application SHOULD enable the asset owner to copy-paste the password to the system clipboard for one-time use and then makes a best effort to delete this secret from memory.
