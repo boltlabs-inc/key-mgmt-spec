@@ -12,7 +12,9 @@ This repository holds the current design specification for [Lock Keeper](https:/
 1. [System Architecture](systems-architecture.md)<br>
 1. [System Functionality](system-functionalities.md)<br>
 1. [Where to Find Code](repository-list.md)<br>
+1. [Contributing](contributing.md)<br>
 1. [Glossary](glossary.md)
+
 
 ### This page
 1. [Contents](#contents)<br>
@@ -66,5 +68,5 @@ Here is a working list of what should be included in this repository:
 ### Out of Scope
 We do not attempt to capture granular, non-cryptographic implementation and software architecture decisions. This type of development decision should be documented clearly in [Lock Keeper](https://github.com/boltlabs-inc/key-mgmt).
 
-
-
+### Contributing
+Please see [this page](contributing.md) for guidelines.
