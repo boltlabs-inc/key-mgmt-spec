@@ -1,5 +1,5 @@
 # Contributing
-To contribute to the specification, please refer to the following guidelines.
+To contribute to the specification, please refer to the [Repository Overview](README.md#repository-overview) from the [README](README.md) and adhere to the following guidelines.
 
 ## Writing Guidelines
 
