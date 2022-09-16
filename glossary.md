@@ -11,8 +11,7 @@
 
 **Client**: Software that runs on an asset owner's device and initiates workflows involving secrets.
 
-**Demo repository**: A repository that demonstrates usage of the client and server libraries. <br>
-- [TODO #93](https://github.com/boltlabs-inc/key-mgmt/issues/93): Add location after set-up.
+**Demo repository**: A [repository](https://github.com/boltlabs-inc/key-mgmt-demo) that demonstrates usage of the client and server libraries.
 
 **Endpoint**: A gRPC method that establishes a session and determines which protocol or workflow will be executed within that session.
 
