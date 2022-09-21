@@ -41,7 +41,9 @@ We have the following dependencies:
     - [TODO #22](https://github.com/boltlabs-inc/key-mgmt-spec/issues/22): Select and add config, setup, and implementation dependency information.
 - Cryptographic Hash Function `Hash`. We use [SHA3-256](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.202.pdf) throughout in our constructions, as implemented in [sha3](https://docs.rs/sha3/latest/sha3/) by RustCrypto.
 - CSPRNG, `rng`.
-    - [TODO #49](https://github.com/boltlabs-inc/key-mgmt-spec/issues/49): Add dependency information for the above.
+    - We use the [`rand` crate's `CryptoRng` trait](https://docs.rs/rand/latest/rand/trait.CryptoRng.html) to require cryptographically secure random number generators in the crypto module.
+    - In the client and server code, we instantiate random number generator using the [`StdRng` provided by the `rand` crate](https://docs.rs/rand/latest/rand/rngs/struct.StdRng.html).
+    - In most tests, we use the [`ThreadRng` provided by the `rand` crate](https://docs.rs/rand/latest/rand/rngs/struct.ThreadRng.html). Occasionally, we use a manually seeded `StdRng` to get predictable behavior.
 - Symmetric AEAD scheme. We are using [chacha20poly1305](https://docs.rs/chacha20poly1305/0.10.1/chacha20poly1305/index.html) by RustCrypto, which implements [RFC 8439](https://tools.ietf.org/html/rfc8439). This library is under active development. An earlier release of this repository was audited by NCC Group in February 2020.
     - This scheme uses a 256-bit pseudorandom key. There are no further requirements on the format or properties of the key.
     - This implementation will not execute in constant time on processors with a variable-time multiplication operation.
