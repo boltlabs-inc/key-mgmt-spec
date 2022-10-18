@@ -130,21 +130,21 @@ Protocol:
    1. Runs the [Generate a key identifier](#generate-a-key-identifier) subprotocol, the output of which is a globally unique identifier `key_id`.
    1. Sends `key_id` to the client over the secure channel.
 1. The client:
-    1. Runs the [generate](#generate-a-secret) protocol on input `(32, rng, user_id||key_id||"client-generated")` to get a secret `arbitrary_key`.
+    1. <a id='localgen-client-generate'></a>Runs the [generate](#generate-a-secret) protocol on input `(32, rng, user_id||key_id||"client-generated")` to get a secret `arbitrary_key`.
     1. Computes `ciphertext = Enc(storage_key, arbitrary_key, user_id||key_id||"client-generated")` and sends `ciphertext` to the key server over the secure channel.
-    1. [Prepares to store](#client-side-storage) `arbitrary_key`and associated data `user_id||key_id||"client-generated"` locally by creating a storage object to be returned to the calling application at the end of the protocol. This storage object, `StorageObject`, should contain `arbirary_key` and the associated data `user_id||key_id||"client-generated"`.
+    1. [Prepares to store](#client-side-storage) `arbitrary_key` and associated data `user_id||key_id||"client-generated"` locally by creating a storage object to be returned to the calling application at the end of the protocol. This storage object, `StorageObject`, should contain `arbirary_key` and the associated data `user_id||key_id||"client-generated"`.
         - Implementation notes:
             - This preparation step is a placeholder for future, non-trivial code. 
             - The implementation should make a best effort to drop `arbitrary_key` from memory at this point.
 1. The key server:
-    1. Runs a validity check on , `ciphertext` (i.e., the ciphertext must be of the expected format and length).
+    1. Runs a validity check on `ciphertext` (i.e., the ciphertext must be of the expected format and length).
     1. [Stores](#server-side-storage) a tuple containing `ciphertext` and associated data `user_id||key_id||"client-generated"` in the server database.
     1. Stores the current request information, including the outcome of the validity check, in an [audit log](#audit-logs) associated with the given user.    
     1. Sends an ACK to the client.
     1. Outputs a success indicator.
 1. The client:
     1. Closes the session.
-    1. Outputs `key_id` and `StorageObject` to the calling application.
+    1. <a id='localgen-client-output'></a>Outputs `key_id` and `StorageObject` to the calling application.
 
 Implementation guidance: For security, all verification checks run by the key server MUST run in constant-time.
 
@@ -172,15 +172,15 @@ Protocol:
 1. The key server:
     1. Runs a validity check on the received request and `user_id`(i.e., there must be a valid open request session, the request must conform to the expected format, and `user_id` must be of the expected format and length, and should match that of the open request session). If this check fails, the server MUST reject the request.
     1. Runs the [generate a key identifier](#generate-a-key-identifier) subprotocol, the output of which is a globally unique identifier `key_id`.
-    1. Runs the [generate](#generate-a-secret) protocol on input `(32, rng, user_id||key_id||"server-generated")` to get a secret `arbitrary_key`.
+    1. <a id='remotegen-server-generate'></a>Runs the [generate](#generate-a-secret) protocol on input `(32, rng, user_id||key_id||"server-generated")` to get a secret `arbitrary_key`.
     1. [Stores](#server-side-storage) a tuple containing `arbitrary_key` and associated data `user_id`, and `key_id` in the server database.
-    1. Sends `key_id` to the client over the secure channel.
+    1. <a id='remotegen-server-send-key-id'></a>Sends `key_id` to the client over the secure channel.
     1. Stores the current request information, including the outcome of the validity check, in an [audit log](#audit-logs) associated with the given user.    
     1. Outputs a success indicator.
 1. The client:
-    1. [Stores](#client-side-storage) the received `key_id` locally.
+    1. <a id='remotegen-client-store'></a>[Stores](#client-side-storage) the received `key_id` locally.
     1. Closes the session.
-    1. Outputs `key_id` to the calling application.
+    1. <a id='remotegen-client-output'></a>Outputs `key_id` to the calling application.
 
 Implementation guidance: For security, all verification checks run by the key server MUST run in constant-time.
 
@@ -338,13 +338,26 @@ Implementation guidance: For security, all verification checks run by the key se
 The asset owner can create and use signing keys in a manner similar to arbitrary secrets, with the additional operation of creating signatures.
 
 ### Inherited Operations
-All of the [protocols for arbitrary secrets](#operations-on-arbitrary-secrets) should be supported. The only difference is the type of key created and used. That is, calling the generation functionality should allow the asset owner to create one of the following key types:
+All of the [protocols for arbitrary secrets](#operations-on-arbitrary-secrets) should be supported. The only significant difference is the type of key created and used; minor protocol modifications are described below. That is, calling the generation functionality should allow the asset owner to create one of the following key types:
 - ECDSA on secp256 curve; or
 - Ed25519 (i.e., EdDSA on edwards25519).
 
-Signing keys have an additional supported operation, namely, the creation of a signature.
+Signing keys have an additional supported operation, namely, the creation of a signature. They also have an additional public component that can be derived from a generated key.
 
 Implementation guidance: We pick these ECDSA/EdDSA parameters in order to provide functionality compatible with EVM-based blockchains. However, we expect to support multiple blockchains and signing primitives in the future.
+
+### Generating and Storing a Signing Key
+Both key generation protocols need a modification to return the public component of the generated key to the calling application.
+
+In [local secret generation with remote backup](#local-secret-generation-with-remote-encrypted-backup):
+- In step [3.iii](#localgen-client-generate), the generate protocol returns the `arbitrary_key` and its public component `public_key`.
+- In step [5.i](#localgen-client-output), the client outputs `key_id`, `public_key`, and `StorageObject` to the calling application.
+
+In [remote-only secret generation protocol](#remote-only-secret-generation-and-storage):
+- In step [2.iii](#remotegen-server-generate), the generate protocol returns the `arbitrary_key` and its public component `public_key`.
+- In step [2.v](#remotegen-server-send-key-id), the key server sends `key_id` and `public_key` to the client over the secure channel.
+- In step [3.i](#remotegen-client-store), the client stores `key_id` and `public_key`.
+- In [3.iii](#remotegen-client-output), the client outputs both `key_id` and `public_key` to the calling application.
 
 ### Sign a Message
 #### Local signing
