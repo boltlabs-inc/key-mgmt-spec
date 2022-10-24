@@ -282,8 +282,8 @@ Protocol:
    1. Runs a validity check on the received request and `user_id` (i.e., there must be a valid open request session, the request must conform to the expected format, and `user_id` must be of the expected format and length, and should match that of the open request session). If this check fails, the server MUST reject the request.
    1. Runs the [Generate a key identifier](#generate-a-key-identifier) subprotocol, the output of which is a globally unique identifier `key_id`. 
    1. Sends `key_id` to the client over the secure channel.
-1. The client:
-    1. Computes `Enc(storage_key, secret, user_id||key_id||"imported key")` and sends the resulting ciphertext to the key server over the secure channel.
+1. <a id='localimport-client-encrypt'></a>The client:
+    1. Computes `Enc(storage_key, arbitrary_key, user_id||key_id||"imported key")` and sends the resulting ciphertext to the key server over the secure channel.
     1. [Stores](#client-side-storage) `arbitrary_key` and associated data `user_id||key_id||"imported key"` locally.
 1. The key server:
     1. Runs a validity check on the received ciphertext (i.e., the ciphertext must be of the expected format and length).
@@ -293,7 +293,7 @@ Protocol:
     1. Outputs a success indicator.
 1. The client:
     1. Closes the session.
-    1. Outputs `key_id` to the calling application.
+    1. <a id='localimport-client-output'></a>Outputs `key_id` to the calling application.
 
 Implementation guidance: For security, all verification checks run by the key server MUST run in constant-time.
 
@@ -322,14 +322,14 @@ Protocol:
 1. The key server:
    1. Runs a validity check on the received request and `user_id` (i.e., there must be a valid open request session, the request must conform to the expected format, and `user_id` must be of the expected format and length, and should match that of the open request session). If this check fails, the server MUST reject the request.
    1. Runs the [generate a key identifier](#generate-a-key-identifier) subprotocol, the output of which is a globally unique identifier `key_id`. 
-   1. [Stores](#server-side-storage) a tuple containing `arbitrary_key` and associated data `user_id||key_id||"imported_key"` in the server database.
-   1. Sends `key_id` to the client over the secure channel.
+   1. <a id='remoteimport-server-store'></a>[Stores](#server-side-storage) a tuple containing `arbitrary_key` and associated data `user_id||key_id||"imported_key"` in the server database.
+   1. <a id='remoteimport-server-send'></a>Sends `key_id` to the client over the secure channel.
    1. [Stores](#server-side-storage) the current request information, including the outcome of the validity check, in an [audit log](#audit-logs) associated with the given user.    
    1. Outputs a success indicator.
 1. The client:
-    1. [Stores](#client-side-storage) the received `key_id` and associated context `"imported key"` locally.
+    1. <a id='remoteimport-client-store'></a>[Stores](#client-side-storage) the received `key_id` and associated context `"imported key"` locally.
     1. Closes the session.
-    1. Outputs `key_id` to the calling application.
+    1. <a id='remoteimport-client-output'></a>Outputs `key_id` to the calling application.
 
 Implementation guidance: For security, all verification checks run by the key server MUST run in constant-time.
 
@@ -358,6 +358,19 @@ In [remote-only secret generation protocol](#remote-only-secret-generation-and-s
 - In step [2.v](#remotegen-server-send-key-id), the key server sends `key_id` and `public_key` to the client over the secure channel.
 - In step [3.i](#remotegen-client-store), the client stores `key_id` and `public_key`.
 - In [3.iii](#remotegen-client-output), the client outputs both `key_id` and `public_key` to the calling application.
+
+### Importing a Signing Key
+Both versions of key import should return the public component of the generated key to the calling application.
+
+In [local import with remote backup](#local-import-with-remote-backup):
+- In step [3](#localimport-client-encrypt), the client computes `public_key` from `arbitrary_key`. This can happen in any order relative to the other items in step 3.
+- In step [5.ii](#localimport-client-output), the client outputs both `key_id` and `public_key` to the calling application.
+
+In the [import to key server only protocol](#import-to-key-server-only):
+- In step [2.iii](#remoteimport-server-store), the server also computes `public_key` from `arbitrary_key`.
+- In step [2.iv](#remoteimport-server-send), the server sends both `key_id` and `public_key` to the client.
+- In step [3.i](#remoteimport-client-store), the client stores both the received `key_id` and `public_key`, and the associated context `"imported key"` locally.
+- In step [3.iii](#remoteimport-client-output), the client outputs both `key_id` and `public_key` to the calling application.
 
 ### Sign a Message
 #### Local signing
