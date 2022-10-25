@@ -275,7 +275,7 @@ Output:
 
 Protocol:
 1. The client:
-   1. [Opens a request session](systems-architecture.md#request-session) for the given credentials `user_credentials`. The client receives as output an open secure channel and a user identifier `user_id`.
+   1. <a id='localimport-client-open'></a>[Opens a request session](systems-architecture.md#request-session) for the given credentials `user_credentials`. The client receives as output an open secure channel and a user identifier `user_id`.
    1. Calls [`retrieve_storage_key`](#retrieve_storage_key-protocol), the output of which is `storage_key`.
    1. Sends a request message to the key server over the session's secure channel. This message MUST indicate the desire to store an imported secret remotely and contain `user_id`.
 1. The key server:
@@ -320,7 +320,7 @@ Protocol:
    1. [Opens a request session](systems-architecture.md#request-session) for the given credentials `user_credentials`. The client receives as output an open secure channel and a user identifier `user_id`.
    1. Sends a request message to the key server over the session's secure channel. This message MUST indicate the desire to store an imported secret remotely and contain both `arbitrary_key` and `user_id`.
 1. The key server:
-   1. Runs a validity check on the received request and `user_id` (i.e., there must be a valid open request session, the request must conform to the expected format, and `user_id` must be of the expected format and length, and should match that of the open request session). If this check fails, the server MUST reject the request.
+   1. <a id='remoteimport-server-validate'></a>Runs a validity check on the received request and `user_id` (i.e., there must be a valid open request session, the request must conform to the expected format, and `user_id` must be of the expected format and length, and should match that of the open request session). If this check fails, the server MUST reject the request.
    1. Runs the [generate a key identifier](#generate-a-key-identifier) subprotocol, the output of which is a globally unique identifier `key_id`. 
    1. <a id='remoteimport-server-store'></a>[Stores](#server-side-storage) a tuple containing `arbitrary_key` and associated data `user_id||key_id||"imported_key"` in the server database.
    1. <a id='remoteimport-server-send'></a>Sends `key_id` to the client over the secure channel.
@@ -338,16 +338,19 @@ Implementation guidance: For security, all verification checks run by the key se
 The asset owner can create and use signing keys in a manner similar to arbitrary secrets, with the additional operation of creating signatures.
 
 ### Inherited Operations
-All of the [protocols for arbitrary secrets](#operations-on-arbitrary-secrets) should be supported. The only significant difference is the type of key created and used; minor protocol modifications are described below. That is, calling the generation functionality should allow the asset owner to create one of the following key types:
-- ECDSA on secp256 curve; or
-- Ed25519 (i.e., EdDSA on edwards25519).
+All of the [protocols for arbitrary secrets](#operations-on-arbitrary-secrets) should be supported; calling either of the generation functionalities allows the asset owner to create an ECDSA key on the secp256k1 curve. For several operations, there are protocol differences compared to the arbitrary secrets protocol versions. Modifications to the listed protcols are defined in the following sections:
+- Local secret generation with remote backup
+- Remote-only secret generation
+- Local import with remote backup
+- Import to key server only
 
-Signing keys have an additional supported operation, namely, the creation of a signature. They also have an additional public component that can be derived from a generated key.
+Signing keys have an additional supported operation, namely, the creation of a signature.
 
-Implementation guidance: We pick these ECDSA/EdDSA parameters in order to provide functionality compatible with EVM-based blockchains. However, we expect to support multiple blockchains and signing primitives in the future.
+Implementation guidance: We pick these ECDSA parameters in order to provide functionality compatible with EVM-based blockchains. However, we expect to support multiple blockchains and signing primitives in the future.
 
 ### Generating and Storing a Signing Key
-Both key generation protocols need a modification to return the public component of the generated key to the calling application.
+ECDSA keys have two parts: a secret or private key used in the signing protocol, and a public key corresponding to the private key and used in signature verification. The public key can be derived from the private key.
+Both key generation protocols are modified to return the public component of the generated key to the calling application.
 
 In [local secret generation with remote backup](#local-secret-generation-with-remote-encrypted-backup):
 - In step [3.iii](#localgen-client-generate), the generate protocol returns the `arbitrary_key` and its public component `public_key`.
@@ -360,13 +363,15 @@ In [remote-only secret generation protocol](#remote-only-secret-generation-and-s
 - In [3.iii](#remotegen-client-output), the client outputs both `key_id` and `public_key` to the calling application.
 
 ### Importing a Signing Key
-Both versions of key import should return the public component of the generated key to the calling application.
+Both versions of key import are modified to return the public component of the imported key to the calling application.
 
 In [local import with remote backup](#local-import-with-remote-backup):
+- Before step [1.i](#localimport-client-open), the client runs a validity check on the input `arbitrary_key`. It should be of the form `len || secret_material`, where `len` is one byte that represents the length of the secret material `secret_material` in bytes, and `secret_material` is an integer in the interval `[1, n-1]`, where `n` is the order of the `secp256k1` curve.
 - In step [3](#localimport-client-encrypt), the client computes `public_key` from `arbitrary_key`. This can happen in any order relative to the other items in step 3.
 - In step [5.ii](#localimport-client-output), the client outputs both `key_id` and `public_key` to the calling application.
 
 In the [import to key server only protocol](#import-to-key-server-only):
+- In step [2.i](#remoteimport-server-validate), the server also runs a validity check on `arbitrary_key`. It should be of the form `len || secret_material`, where `len` is one byte that represents the length of the secret material `secret_material` in bytes, and `secret_material` is an integer in the interval `[1, n-1]`, where `n` is the order of the `secp256k1` curve.
 - In step [2.iii](#remoteimport-server-store), the server also computes `public_key` from `arbitrary_key`.
 - In step [2.iv](#remoteimport-server-send), the server sends both `key_id` and `public_key` to the client.
 - In step [3.i](#remoteimport-client-store), the client stores both the received `key_id` and `public_key`, and the associated context `"imported key"` locally.
