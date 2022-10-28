@@ -10,6 +10,8 @@ This page contains protocol descriptions for Lock Keeper system functionalities.
     1. [Import a Secret](#import-a-secret) <br>
 1. [Operations on Signing Keys](#operations-on-signing-keys) <br>
     1. [Inherited Operations](#inherited-operations) <br>
+        1. [Generating and Storing a Signing Key](#generating-and-storing-a-signing-key) <br>
+        1. [Importing a Signing Key](#importing-a-signing-key) <br>
     1. [Sign a Message](#sign-a-message) <br>
 1. [Cryptographic and Supporting Dependencies](#cryptographic-and-supporting-operations) <br>
     1. [External Dependencies](#external-dependencies) <br>
@@ -348,7 +350,7 @@ Signing keys have an additional supported operation, namely, the creation of a s
 
 Implementation guidance: We pick these ECDSA parameters in order to provide functionality compatible with EVM-based blockchains. However, we expect to support multiple blockchains and signing primitives in the future.
 
-### Generating and Storing a Signing Key
+#### Generating and Storing a Signing Key
 ECDSA keys have two parts: a secret or private key used in the signing protocol, and a public key corresponding to the private key and used in signature verification. The public key can be derived from the private key.
 Both key generation protocols are modified to return the public component of the generated key to the calling application.
 
@@ -359,10 +361,10 @@ In [local secret generation with remote backup](#local-secret-generation-with-re
 In [remote-only secret generation protocol](#remote-only-secret-generation-and-storage):
 - In step [2.iii](#remotegen-server-generate), the generate protocol returns the `arbitrary_key` and its public component `public_key`.
 - In step [2.v](#remotegen-server-send-key-id), the key server sends `key_id` and `public_key` to the client over the secure channel.
-- In step [3.i](#remotegen-client-store), the client stores `key_id` and `public_key`.
+- In step [3.i](#remotegen-client-store), the client [stores](#client-side-storage) `key_id` and `public_key`.
 - In [3.iii](#remotegen-client-output), the client outputs both `key_id` and `public_key` to the calling application.
 
-### Importing a Signing Key
+#### Importing a Signing Key
 Both versions of key import are modified to return the public component of the imported key to the calling application.
 
 In [local import with remote backup](#local-import-with-remote-backup):
@@ -374,7 +376,7 @@ In the [import to key server only protocol](#import-to-key-server-only):
 - In step [2.i](#remoteimport-server-validate), the server also runs a validity check on `arbitrary_key`. It should be of the form `len || secret_material`, where `len` is one byte that represents the length of the secret material `secret_material` in bytes, and `secret_material` is an integer in the interval `[1, n-1]`, where `n` is the order of the `secp256k1` curve.
 - In step [2.iii](#remoteimport-server-store), the server also computes `public_key` from `arbitrary_key`.
 - In step [2.iv](#remoteimport-server-send), the server sends both `key_id` and `public_key` to the client.
-- In step [3.i](#remoteimport-client-store), the client stores both the received `key_id` and `public_key`, and the associated context `"imported key"` locally.
+- In step [3.i](#remoteimport-client-store), the client [stores](#client-side-storage) both the received `key_id` and `public_key`, and the associated context `"imported key"` locally.
 - In step [3.iii](#remoteimport-client-output), the client outputs both `key_id` and `public_key` to the calling application.
 
 ### Sign a Message
