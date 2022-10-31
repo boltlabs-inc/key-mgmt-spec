@@ -230,7 +230,7 @@ Protocol:
     1. Stores the current request information, including the outcome of the validity check, in an [audit log](#audit-logs) associated with the given user.  
     1. Outputs a success indicator.
 1. The client:
-    1. If the received record `record` contains associated data `"client-generated"`, computes `arbitrary_key = Dec(storage_key, ciphertext, associated_data)`, where `ciphertext` is the received ciphertext from the key server and `associated_data` is the associated data received from the server. Otherwise, sets `arbitrary_key` to be the secret material in the tuple `record`.
+    1. If the received record `record` contains associated data `"client-generated"` or `"imported key"`, computes `arbitrary_key = Dec(storage_key, ciphertext, associated_data)`, where `ciphertext` is the received ciphertext from the key server and `associated_data` is the associated data received from the server. Otherwise, sets `arbitrary_key` to be the secret material in the tuple `record`.
     1. Deletes `storage_key` from memory. 
     1. Closes the open request session.
     1. If `context` is set to `NULL`, outputs a success indicator to the calling application and halts.
