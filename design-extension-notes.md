@@ -33,7 +33,7 @@ MPC integration notes:
     - Providing users the option of holding a key share and considering more general access control structures could mitigate concerns about misbehaving servers in the decentralized setting.
 
 ### Transport Layer
-TLS with server authentication is used to secure the transport layer.
+TLS with authentication of the server by the client is used to secure the transport layer. Application-layer session security is handled independently from the transport layer.
 
 ### Application-Layer Sessions
 
