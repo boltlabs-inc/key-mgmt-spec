@@ -3,13 +3,13 @@
 ## Overview
 There are two technologies we wish to incorporate into the Lock-Keeper design: _secure processors_ (or _enclaves_) and _multi-party-computation (MPC)_. This in-progress document will capture the requirements and design notes for each.
 
-- Secure processors: Designing and integrating enclaves is a large design effort, with significant challenges. In particular, enclave environments have significant resource restrictions and limited functionalitie. Some notes on our approach follow:
+- Secure processors: Designing and integrating enclaves is a large design effort, with significant challenges. In particular, enclave environments have significant resource restrictions and limited functionalities. Some notes on our approach follow:
     - We intend to incorporate secure processors on the key server(s). Our end goal is that the [system's cryptographic functionalities](system-functionalities.md) and OPAQUE handshake are run in an enclave. Other non-core functionalities can be handled outside of the enclave.
     - We will design an enclave abstraction and define a path for future integration of multiple enclave technologies, starting with SGX and AWS Nitro. 
     - We will start with an exploration of appropriate enclave boundaries. The goal is to use secure processors for a minimal set of functionalities, e.g., for all server-side computations on sensitive user data, but excluding, to the extent possible, session handling, message framework, general user management.
 - MPC: We intend to incorporate multiple key servers, each of which contributes to key generation and use. 
     - In this way, we can distribute trust across multiple cloud providers, with each provider having limited access to system and user data. In this setting, we have `n` servers `S_1, ..., S_n` and a threshold parameter `t`.
-    - Architecturally, it may also be possible to use an aggregator to help with routing and processing of messages from the key servers on behalf of the client, as well as in the final processing of a signature request (i.e., the formation of a signature from partial signatures, where the partial signatures are provided by a subset of key servers).
+    - Architecturally, it may also be possible to use a coordinator component to help with routing and processing of messages from the key servers on behalf of the client, as well as in the final processing of a signature request (i.e., the formation of a signature from partial signatures, where the partial signatures are provided by a subset of key servers).
 
 
 ## Requirements and High-level Design Notes
@@ -63,7 +63,7 @@ MPC integration notes:
 
 ### Secure Storage
 Requirements for secure storage include:
-- The key server must always know that they are looking at a fresh database state.
+- The key server framework must always know that they are looking at a fresh database state, i.e., we must protect against roll-back attacks.
 - We need to achieve secure deletion: an asset owner who has exported (and requested the deletion of key material from the key server) should be confident that a key server cannot later access this deleted key material. 
 - Replication and backup of secrets by the key servers should require active participation by the asset owner.
 
