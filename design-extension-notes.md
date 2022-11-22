@@ -99,7 +99,7 @@ In the near-term, we intend to incorporate an export functionality that allows f
 ## (Slightly) Lower-Level Design Notes: Signing Keys and Arbitrary Secrets
 As stated in [Application Layer Sessions](#application-layer-sessions), the key server holds a per-user seed `user_seed`. The server also uses this seed as part of the protocol to create and store keys.
 
-##### Self-custodial signing keys
+### Self-custodial signing keys
 Then the user key derivation process works as follows:
 
 Common Input:
@@ -130,7 +130,7 @@ Notes:
 - If we do vanilla threshold ECDSA (including a DKG) in combination with enclaves, this may be sufficient security for delegated keys, and, in a non-decentralized setting, self-custodial keys. In a decentralized setting, it is likely advisable to have the users be full participants in the threshold computation and require the user share for self-custodial key use (and a delegated authority share for delegated key use). Users could keep e2e-encrypted backups of their share and secure this under their password; we could consider _where_ these backups should be stored. e.g., We may wish to store them at a special-purpose (set of) server(s), rather than at the same key servers that hold key shares.
 - Threshold ECDSA protocol choice: As we likely want a proactive scheme with identifiable aborts that is compatible with cold storage/HSM use. This immediately points us in the direction of [Canetti, Gennaro, Goldfeder, Makriyanni, and Peled's solution [CGGMP20]](https://eprint.iacr.org/2021/060).
 
-##### Delegated signing keys
+### Delegated signing keys
 Will be supported at a later date.
 
 Notes:
