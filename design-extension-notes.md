@@ -1,5 +1,18 @@
 # Design Extension Notes
 
+## Page Contents
+1. [Overview](#overview)<br>
+1. [Requirements and High-Level Design Notes](#requirements-and-high-level-design-notes)<br>
+    1. [Threat Model](#threat-model)<br>
+    1. [Transport Layer](#transport-layer)<br>
+    1. [Application-Layer Sessions](#application-layer-sessions)<br>
+    1. [Secure Storage](#secure-storage)<br>
+    1. [Availability](#availability)<br>
+    1. [Recovery](#recovery)<br>
+1. [(Slightly) Lower-Level Design Notes: Signing Keys and Arbitrary Secrets](#slightly-lower-level-design-notes-signing-keys-and-arbitrary-secrets)<br>
+    1. [Self-custodial signing keys](#self-custodial-signing-keys)<br>
+    1. [Delegated signing keys](#delegated-signing-keys)<br>
+
 ## Overview
 There are two technologies we wish to incorporate into the Lock-Keeper design: _secure processors_ (or _enclaves_) and _multi-party-computation (MPC)_. This in-progress document will capture the requirements and design notes for each.
 
